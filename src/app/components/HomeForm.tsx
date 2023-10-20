@@ -1,4 +1,7 @@
 "use client";
+
+import React, { useState } from "react";
+
 import {
   Box,
   Button,
@@ -10,29 +13,22 @@ import {
 } from "@chakra-ui/react";
 
 import { useSession } from "next-auth/react";
-import { useState } from "react";
-import { subscribeTheUser } from "./ably_connection/ablyConnection";
-import { AblySpaceEventIdentifiers } from "../identifiers/AblySpaceEventIdentifiers";
+
+import { subscribeTheUser } from "@/app/config/ably";
 import { CursorUpdate, SpaceMember } from "@ably/spaces";
 
-interface MembersLocation {
-  member: SpaceMember;
-  x: number;
-  y: number;
-}
-
-interface UserEvent {
-  members: SpaceMember[];
-}
+import type { MembersLocation } from "@/app/types/MembersLocation";
+import type { UserEvent } from "@/app/types/UserEvent";
+import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 
 const HomeForm = () => {
-  const { data: session } = useSession();
-  const toast = useToast();
-
-  const [roomName, setRoomName] = useState<string>("");
-  const [guestName, setGuestName] = useState<string>("");
+  const [roomName, setRoomName] = useState("");
+  const [guestName, setGuestName] = useState("");
   const [members, setMembers] = useState<SpaceMember[]>([]);
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
+
+  const { data: session } = useSession();
+  const toast = useToast();
 
   const getToastTitleForUserEvent = (event: string) => {
     switch (event) {
@@ -47,8 +43,10 @@ const HomeForm = () => {
     const members = message.members;
     const lastUser = members[members.length - 1];
     const eventHappened = getToastTitleForUserEvent(lastUser.lastEvent.name);
+
     if (eventHappened === "entered") {
       setMembers(members);
+
       setMembersLocation(
         members.map((member) => {
           return {
@@ -64,12 +62,14 @@ const HomeForm = () => {
           return member.clientId !== lastUser.clientId;
         });
       });
+
       setMembersLocation((prevMembersLocation) => {
         return prevMembersLocation.filter((memberLocation) => {
           return memberLocation.member.clientId !== lastUser.clientId;
         });
       });
     }
+
     toast({
       description:
         lastUser.clientId.split(" ")[0] + " " + eventHappened + " the room",
@@ -81,7 +81,6 @@ const HomeForm = () => {
   };
 
   const handleCursorEvent = (cursorEvent: CursorUpdate) => {
-    console.log(cursorEvent);
     setMembersLocation((prevMembersLocation) => {
       return prevMembersLocation.map((memberLocation) => {
         if (memberLocation.member.clientId === cursorEvent.clientId) {
@@ -91,6 +90,7 @@ const HomeForm = () => {
             y: cursorEvent.position.y,
           };
         }
+
         return memberLocation;
       });
     });
@@ -98,13 +98,17 @@ const HomeForm = () => {
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const randomUniqueName =
       guestName + " " + Math.random().toString(36).substring(7);
+
     window.localStorage.setItem("guestName", randomUniqueName); // need to implement redux here as well
+
     const space = await subscribeTheUser(
       session?.user?.email ?? randomUniqueName,
       roomName
-    ); // need to implement redux here to store roomname
+    ); // need to implement redux here to store room name
+
     space.subscribe((message) => {
       handleUserEvent(message);
     });
@@ -120,7 +124,7 @@ const HomeForm = () => {
 
   return (
     <>
-      {membersLocation && membersLocation.length > 0 && (
+      {membersLocation && membersLocation.length > 0 ? (
         <Box>
           {membersLocation.map((memberLocation) => {
             if (
@@ -130,6 +134,7 @@ const HomeForm = () => {
             ) {
               return null;
             }
+
             return (
               <Box
                 key={memberLocation.member.clientId}
@@ -144,12 +149,14 @@ const HomeForm = () => {
             );
           })}
         </Box>
-      )}
+      ) : null}
+
       <Box as="form" p="4" onSubmit={handleFormSubmit}>
         <FormControl isRequired>
           {!session && (
             <FormControl isRequired>
               <FormLabel>Enter your name </FormLabel>
+
               <Input
                 type="text"
                 value={guestName}
@@ -157,10 +164,12 @@ const HomeForm = () => {
               />
             </FormControl>
           )}
+
           <FormLabel>
             Join / Create a room{" "}
             {session ? `as ${session?.user?.name?.split(" ")[0]}` : ""}
           </FormLabel>
+
           <Input
             type="text"
             value={roomName}

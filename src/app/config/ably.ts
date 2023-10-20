@@ -1,5 +1,6 @@
-import Spaces from "@ably/spaces";
 import pkg from "ably";
+import Spaces from "@ably/spaces";
+
 const { Realtime } = pkg;
 
 const ablyApiKey = process.env.NEXT_PUBLIC_ABLY_API_TOKEN;
