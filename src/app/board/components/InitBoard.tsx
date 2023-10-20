@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 
 import {
   Text,
@@ -9,6 +11,7 @@ import {
   HStack,
   VStack,
 } from "@chakra-ui/react";
+import { useSession } from "next-auth/react";
 
 type Props = {
   formLabel: string;
@@ -29,9 +32,30 @@ const InitBoard = ({
   handleToggle,
   handleClick,
 }: Props) => {
+  const [userName, setUserName] = useState("");
+
+  const { status } = useSession();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserName(e.target.value);
+  };
+
   return (
     <>
       <VStack gap="6">
+        {status === "unauthenticated" && (
+          <FormControl isRequired>
+            <FormLabel color="darkPrimary">Your Name</FormLabel>
+
+            <Input
+              type="text"
+              placeholder="Enter your name"
+              value={userName}
+              onChange={handleInputChange}
+            />
+          </FormControl>
+        )}
+
         <FormControl isRequired>
           <FormLabel color="darkPrimary">{formLabel}</FormLabel>
 

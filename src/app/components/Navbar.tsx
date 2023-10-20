@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
 import { HStack, Text, Avatar, Button, Image } from "@chakra-ui/react";
 import { signIn, signOut, useSession } from "next-auth/react";

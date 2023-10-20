@@ -11,10 +11,14 @@ import {
   ModalBody,
 } from "@chakra-ui/react";
 import InitBoard from "@/app/board/components/InitBoard";
+import { useBoundStore } from "@/zustand/store";
 
 const InitModal = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [isCreating, setIsCreating] = useState(false);
+  const [isCreating, setIsCreating] = useState(true);
+
+  const setBoard = useBoundStore((state) => state.setBoard);
+  const setGuestUser = useBoundStore((state) => state.setGuestUser);
 
   const toggleIsCreating = () => {
     setIsCreating(!isCreating);
@@ -34,7 +38,7 @@ const InitModal = () => {
       isCentered
       isOpen={isOpen}
       onClose={onClose}
-      closeOnOverlayClick={false}
+      // closeOnOverlayClick={false} TODO: uncomment this when handleJoin and handleCreate are implemented
     >
       <ModalOverlay
         bg="none"

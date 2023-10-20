@@ -1,4 +1,5 @@
 import { VStack, Text, Image, HStack } from "@chakra-ui/react";
+
 import OnboardingCard from "@/app/components/OnboardingCard";
 
 export default function Home() {

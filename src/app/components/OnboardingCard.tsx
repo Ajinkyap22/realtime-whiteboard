@@ -4,14 +4,21 @@ import React from "react";
 
 import { signIn } from "next-auth/react";
 import { VStack, Text, Button } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   type: "create-board" | "sign in";
 };
 
 const OnboardingCard = ({ type }: Props) => {
+  const router = useRouter();
+
   const handleSignIn = () => {
     signIn("google");
+  };
+
+  const handleCreateBoard = () => {
+    router.push("/board");
   };
 
   return (
@@ -44,6 +51,7 @@ const OnboardingCard = ({ type }: Props) => {
 
       {type === "create-board" ? (
         <Button
+          onClick={handleCreateBoard}
           mt="6"
           fontSize="lg"
           h="0"
