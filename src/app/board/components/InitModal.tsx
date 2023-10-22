@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import {
   useDisclosure,
@@ -10,23 +10,19 @@ import {
   ModalHeader,
   ModalBody,
 } from "@chakra-ui/react";
-import InitBoard from "@/app/board/components/InitBoard";
 import { useBoundStore } from "@/zustand/store";
+
+import InitBoard from "@/app/board/components/InitBoard";
 
 const InitModal = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [isCreating, setIsCreating] = useState(true);
 
-  const setBoard = useBoundStore((state) => state.setBoard);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
 
-  const toggleIsCreating = () => {
-    setIsCreating(!isCreating);
+  const handleCreateGuestUser = (guestUserName: string) => {
+    setGuestUser(guestUserName);
+    onClose();
   };
-
-  const handleJoin = () => {};
-
-  const handleCreate = () => {};
 
   useEffect(() => {
     onOpen();
@@ -38,7 +34,7 @@ const InitModal = () => {
       isCentered
       isOpen={isOpen}
       onClose={onClose}
-      // closeOnOverlayClick={false} TODO: uncomment this when handleJoin and handleCreate are implemented
+      // closeOnOverlayClick={false} TODO: uncomment this when handleCreateGuestUser is implemented
     >
       <ModalOverlay
         bg="none"
@@ -49,23 +45,11 @@ const InitModal = () => {
 
       <ModalContent>
         <ModalHeader color="darkPrimary">
-          {isCreating ? "Create a new board" : "Join a board"}
+          Tell us a little about yourself
         </ModalHeader>
 
         <ModalBody pb="6">
-          <InitBoard
-            formLabel={isCreating ? "Board name" : "Board Link"}
-            inputType={isCreating ? "text" : "url"}
-            placeholder={
-              isCreating ? "Enter a name for your board" : "Board link to join"
-            }
-            buttonText={isCreating ? "Create Board" : "Join Board"}
-            alternativeButtonText={
-              isCreating ? "Join Board" : "Create a new board"
-            }
-            handleToggle={toggleIsCreating}
-            handleClick={isCreating ? handleCreate : handleJoin}
-          />
+          <InitBoard handleSave={handleCreateGuestUser} />
         </ModalBody>
       </ModalContent>
     </Modal>

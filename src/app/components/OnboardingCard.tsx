@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { VStack, Text, Button } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
+import uniqid from "uniqid";
 
 type Props = {
   type: "create-board" | "sign in";
@@ -12,14 +13,26 @@ type Props = {
 
 const OnboardingCard = ({ type }: Props) => {
   const router = useRouter();
+  const { status } = useSession();
 
   const handleSignIn = () => {
     signIn("google");
   };
 
   const handleCreateBoard = () => {
-    router.push("/board");
+    const id = uniqid();
+    router.push(`/board/${id}`);
   };
+
+  const handleCreateBoardWithSignIn = () => {};
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
+      handleCreateBoard();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   return (
     <VStack bg="white" p="6" borderRadius="lg" boxShadow="all-around">
