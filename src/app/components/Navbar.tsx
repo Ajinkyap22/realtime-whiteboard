@@ -21,11 +21,11 @@ const Navbar = () => {
     signOut();
   };
 
-  useEffect(() => {
-    if (status === "unauthenticated" && !guestUser) {
-      router.push("/");
-    }
-  }, [status, guestUser, router]);
+  // useEffect(() => {
+  //   if (status === "unauthenticated" && !guestUser) {
+  //     router.push("/");
+  //   }
+  // }, [status, guestUser, router]);
 
   if (status === "unauthenticated" && !guestUser) return null;
 
