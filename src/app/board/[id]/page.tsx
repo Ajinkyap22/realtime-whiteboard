@@ -12,8 +12,8 @@ import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 
 import uniqid from "uniqid";
-import { Box, Image, useToast } from "@chakra-ui/react";
-import { CursorUpdate, SpaceMember } from "@ably/spaces";
+import { Avatar, AvatarGroup, Box, Image, useToast } from "@chakra-ui/react";
+import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 
 type Props = {
   params: {
@@ -49,14 +49,26 @@ const Board = ({ params }: Props) => {
 
   const handleUserEvent = (message: UserEvent) => {
     const members = message.members;
+    members.sort((a, b) => {
+      return a.lastEvent.timestamp - b.lastEvent.timestamp;
+    });
     const lastUser = members[members.length - 1];
     const eventHappened = getToastTitleForUserEvent(lastUser.lastEvent.name);
 
     if (eventHappened === "entered") {
-      setMembers(members);
+      const uniqueMembers = members.filter(
+        (member, index, self) =>
+          index ===
+          self.findIndex(
+            (t) =>
+              t.clientId === member.clientId &&
+              t.profileData?.name === member.profileData?.name
+          )
+      );
+      setMembers(uniqueMembers);
 
       setMembersLocation(
-        members.map((member) => {
+        uniqueMembers.map((member) => {
           return {
             member: member,
             x: 0,
@@ -109,22 +121,19 @@ const Board = ({ params }: Props) => {
   };
 
   const handleAblyConnection = async () => {
-    console.log("clientId", clientId);
-    const space = await subscribeTheUser(clientId, params.id);
-
-    console.log("space", space);
+    const profileData: ProfileData = {
+      name: session?.user?.name ? session?.user?.name : guestUser,
+      email: session?.user?.email ? session?.user?.email : guestUser,
+      avatar: session?.user?.image ? session?.user?.image : "",
+    };
+    const space = await subscribeTheUser(clientId, params.id, profileData);
 
     space.subscribe((message) => {
       console.log("userEvent", message);
       handleUserEvent(message);
     });
 
-    space.members.subscribe((message) => {
-      console.log("members Event", message);
-    });
-
     space.cursors.subscribe("update", (cursorEvent) => {
-      console.log("cursorEvent", cursorEvent);
       handleCursorEvent(cursorEvent);
     });
 
@@ -154,11 +163,10 @@ const Board = ({ params }: Props) => {
 
   return (
     <>
+      {/* Cursor */}
       {membersLocation && membersLocation.length > 0 ? (
         <Box>
           {membersLocation.map((memberLocation) => {
-            console.log("memberLocation", memberLocation);
-            console.log("clientId", clientId);
             if (memberLocation.member.clientId === clientId) {
               return null;
             }
@@ -172,11 +180,25 @@ const Board = ({ params }: Props) => {
                 zIndex={1000}
               >
                 <Image src="/icons/cursor.svg" alt="cursor" w="4" h="4" />
-                <p>{memberLocation.member.clientId.split("&")[1]}</p>
+                <p>{memberLocation.member?.profileData?.name as string}</p>
               </Box>
             );
           })}
         </Box>
+      ) : null}
+      {/* Avatar stack */}
+      {members && members.length > 0 ? (
+        <AvatarGroup>
+          {members.map((member) => {
+            return (
+              <Avatar
+                key={member.clientId}
+                name={member?.profileData?.name as string}
+                src={member?.profileData?.avatar as string}
+              />
+            );
+          })}
+        </AvatarGroup>
       ) : null}
       {status === "unauthenticated" && !guestUser && <InitModal />}
     </>

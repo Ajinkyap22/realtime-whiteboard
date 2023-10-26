@@ -1,5 +1,5 @@
 import pkg from "ably";
-import Spaces from "@ably/spaces";
+import Spaces, { ProfileData } from "@ably/spaces";
 
 const { Realtime } = pkg;
 
@@ -22,11 +22,12 @@ export const getSpace = async (clientName: string, boardName: string) => {
 
 export const subscribeTheUser = async (
   clientName: string,
-  boardName: string
+  boardName: string,
+  profileData: ProfileData
 ) => {
   const space = await getSpace(clientName, boardName);
 
-  await space.enter({ name: clientName });
+  await space.enter(profileData);
 
   return space;
 };
