@@ -22,6 +22,7 @@ type Props = {
 const InitBoard = ({ handleSave }: Props) => {
   const [guestUserName, setGuestUserName] = useState("");
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const setClientId = useBoundStore((state) => state.setClientId);
 
   const { status } = useSession();
 
@@ -36,8 +37,9 @@ const InitBoard = ({ handleSave }: Props) => {
   useEffect(() => {
     if (status === "authenticated") {
       setGuestUser(null);
+      setClientId(null);
     }
-  }, [status, setGuestUser]);
+  }, [status, setGuestUser, setClientId]);
 
   return (
     <VStack gap="6">
