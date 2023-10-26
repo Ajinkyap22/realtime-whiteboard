@@ -17,6 +17,7 @@ const OnboardingCard = ({ type }: Props) => {
   const { status } = useSession();
   const guestUser = useBoundStore((state) => state.guestUser);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const setClientId = useBoundStore((state) => state.setClientId);
 
   const handleSignIn = () => {
     signIn("google");
@@ -40,8 +41,9 @@ const OnboardingCard = ({ type }: Props) => {
   useEffect(() => {
     if (status === "authenticated") {
       setGuestUser(null);
+      setClientId(null);
     }
-  }, [status, setGuestUser]);
+  }, [status, setGuestUser, setClientId]);
 
   return (
     <VStack bg="white" p="6" borderRadius="lg" boxShadow="all-around">

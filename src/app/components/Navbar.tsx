@@ -35,7 +35,7 @@ const Navbar = () => {
       setGuestUser(null);
       setClientId(null);
     }
-  }, [status, setGuestUser]);
+  }, [status, setGuestUser, setClientId]);
 
   if (pathname === "/") return null;
 

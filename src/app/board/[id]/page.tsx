@@ -143,17 +143,19 @@ const Board = ({ params }: Props) => {
     if (status === "authenticated") {
       handleSaveBoard();
     }
-    //TODO: add dependency of board data
+    // TODO: add dependency of board data
   }, []);
 
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, guestUser, clientId]);
 
   useEffect(() => {
     return () => {
       handleUnsubscribe();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -170,7 +172,7 @@ const Board = ({ params }: Props) => {
           : uniqid() + "&" + guestUser?.split(" ")[0] + "&guest"
       );
     }
-  }, [clientId, session, guestUser]);
+  }, [clientId, session, guestUser, setClientId]);
 
   return (
     <>
