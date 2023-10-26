@@ -4,14 +4,16 @@ import React, { useEffect } from "react";
 
 import { HStack, Text, Avatar, Button, Image } from "@chakra-ui/react";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useBoundStore } from "@/zustand/store";
 
 const Navbar = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
 
   const guestUser = useBoundStore((state) => state.guestUser);
+  const setGuestUser = useBoundStore((state) => state.setGuestUser);
 
   const handleSignIn = () => {
     signIn("google");
@@ -27,7 +29,13 @@ const Navbar = () => {
     }
   }, [status, guestUser, router]);
 
-  if (status === "unauthenticated" && !guestUser) return null;
+  useEffect(() => {
+    if (status === "authenticated") {
+      setGuestUser(null);
+    }
+  }, [status, setGuestUser]);
+
+  if (pathname === "/") return null;
 
   return (
     <HStack justifyContent="flex-end" w="full" p="4">
