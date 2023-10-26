@@ -14,6 +14,7 @@ const Navbar = () => {
 
   const guestUser = useBoundStore((state) => state.guestUser);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const setClientId = useBoundStore((state) => state.setClientId);
 
   const handleSignIn = () => {
     signIn("google");
@@ -32,6 +33,7 @@ const Navbar = () => {
   useEffect(() => {
     if (status === "authenticated") {
       setGuestUser(null);
+      setClientId(null);
     }
   }, [status, setGuestUser]);
 

@@ -7,7 +7,7 @@ export type UserSlice = {
   clientId: string | null;
   setUser: (user: User) => void;
   setGuestUser: (guestUser: string | null) => void;
-  setClientId: (clientId: string) => void;
+  setClientId: (clientId: string | null) => void;
 };
 
 export const createUserSlice: StateCreator<UserSlice> = (set) => ({
@@ -22,5 +22,5 @@ export const createUserSlice: StateCreator<UserSlice> = (set) => ({
     set({
       guestUser,
     }),
-  setClientId: (clientId: string) => set({ clientId }),
+  setClientId: (clientId: string | null) => set({ clientId }),
 });

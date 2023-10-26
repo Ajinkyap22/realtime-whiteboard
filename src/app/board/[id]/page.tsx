@@ -27,14 +27,8 @@ const Board = ({ params }: Props) => {
   const { data: session, status } = useSession();
   const guestUser = useBoundStore((state) => state.guestUser);
 
-  const clientId = useMemo(() => {
-    return session?.user?.email
-      ? session?.user?.email +
-          "&" +
-          session?.user?.name?.split(" ")[0] +
-          "&user"
-      : uniqid() + "&" + guestUser?.split(" ")[0] + "&guest";
-  }, [guestUser]);
+  const clientId = useBoundStore((state) => state.clientId);
+  const setClientId = useBoundStore((state) => state.setClientId);
 
   const toast = useToast();
 
@@ -117,16 +111,17 @@ const Board = ({ params }: Props) => {
   };
 
   const handleUnsubscribe = async () => {
-    await unsubscribeTheUser(clientId, params.id);
+    await unsubscribeTheUser(clientId!, params.id);
   };
 
   const handleAblyConnection = async () => {
+    if (!clientId) return;
     const profileData: ProfileData = {
       name: session?.user?.name ? session?.user?.name : guestUser,
       email: session?.user?.email ? session?.user?.email : guestUser,
       avatar: session?.user?.image ? session?.user?.image : "",
     };
-    const space = await subscribeTheUser(clientId, params.id, profileData);
+    const space = await subscribeTheUser(clientId!, params.id, profileData);
 
     space.subscribe((message) => {
       console.log("userEvent", message);
@@ -153,13 +148,29 @@ const Board = ({ params }: Props) => {
 
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();
-  }, [status, guestUser]);
+  }, [status, guestUser, clientId]);
 
   useEffect(() => {
     return () => {
       handleUnsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!guestUser && !session?.user?.name) return;
+
+    if (!clientId) {
+      console.log(guestUser);
+      setClientId(
+        session?.user?.email
+          ? session?.user?.email +
+              "&" +
+              session?.user?.name?.split(" ")[0] +
+              "&user"
+          : uniqid() + "&" + guestUser?.split(" ")[0] + "&guest"
+      );
+    }
+  }, [clientId, session, guestUser]);
 
   return (
     <>
