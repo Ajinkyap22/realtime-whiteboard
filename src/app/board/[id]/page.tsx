@@ -6,7 +6,7 @@ import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import uniqid from "uniqid";
 import { Avatar, AvatarGroup, Box, VStack, useToast } from "@chakra-ui/react";
-import { CursorUpdate, ProfileData, Space, SpaceMember } from "@ably/spaces";
+import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 
 import InitModal from "@/app/board/components/InitModal";
 import Cursor from "@/app/board/components/Cursor";

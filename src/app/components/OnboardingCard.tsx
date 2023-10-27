@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 
 import { signIn, useSession } from "next-auth/react";
 import { VStack, Text, Button } from "@chakra-ui/react";
@@ -31,7 +31,7 @@ const OnboardingCard = ({ type }: Props) => {
   const handleCreateBoardWithSignIn = () => {};
 
   useEffect(() => {
-    if (status === "authenticated" || guestUser) {
+    if (status === "authenticated") {
       // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
       handleCreateBoard();
     }
