@@ -1,19 +1,21 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
+import uniqid from "uniqid";
+import { Avatar, AvatarGroup, Box, VStack, useToast } from "@chakra-ui/react";
+import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 
 import InitModal from "@/app/board/components/InitModal";
+import Cursor from "@/app/board/components/Cursor";
+
 import { subscribeTheUser, unsubscribeTheUser } from "@/app/config/ably";
-import type { MembersLocation } from "@/app/types/MembersLocation";
+
 import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
-
-import uniqid from "uniqid";
-import { Avatar, AvatarGroup, Box, Image, useToast } from "@chakra-ui/react";
-import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
+import type { MembersLocation } from "@/app/types/MembersLocation";
 
 type Props = {
   params: {
@@ -42,15 +44,16 @@ const Board = ({ params }: Props) => {
   };
 
   const handleUserEvent = (message: UserEvent) => {
-    const members = message.members;
-    members.sort((a, b) => {
+    const newMembers = message.members;
+    newMembers.sort((a, b) => {
       return a.lastEvent.timestamp - b.lastEvent.timestamp;
     });
-    const lastUser = members[members.length - 1];
+
+    const lastUser = newMembers[newMembers.length - 1];
     const eventHappened = getToastTitleForUserEvent(lastUser.lastEvent.name);
 
     if (eventHappened === "entered") {
-      const uniqueMembers = members.filter(
+      const uniqueMembers = newMembers.filter(
         (member, index, self) =>
           index ===
           self.findIndex(
@@ -116,11 +119,13 @@ const Board = ({ params }: Props) => {
 
   const handleAblyConnection = async () => {
     if (!clientId) return;
+
     const profileData: ProfileData = {
       name: session?.user?.name ? session?.user?.name : guestUser,
       email: session?.user?.email ? session?.user?.email : guestUser,
       avatar: session?.user?.image ? session?.user?.image : "",
     };
+
     const space = await subscribeTheUser(clientId!, params.id, profileData);
 
     space.subscribe((message) => {
@@ -162,7 +167,6 @@ const Board = ({ params }: Props) => {
     if (!guestUser && !session?.user?.name) return;
 
     if (!clientId) {
-      console.log(guestUser);
       setClientId(
         session?.user?.email
           ? session?.user?.email +
@@ -185,20 +189,22 @@ const Board = ({ params }: Props) => {
             }
 
             return (
-              <Box
+              <VStack
                 key={memberLocation.member.clientId}
                 position="absolute"
                 left={memberLocation.x + "px"}
                 top={memberLocation.y + "px"}
                 zIndex={1000}
+                alignItems="center"
               >
-                <Image src="/icons/cursor.svg" alt="cursor" w="4" h="4" />
+                <Cursor />
                 <p>{memberLocation.member?.profileData?.name as string}</p>
-              </Box>
+              </VStack>
             );
           })}
         </Box>
       ) : null}
+
       {/* Avatar stack */}
       {members && members.length > 0 ? (
         <AvatarGroup>
@@ -213,6 +219,7 @@ const Board = ({ params }: Props) => {
           })}
         </AvatarGroup>
       ) : null}
+
       {status === "unauthenticated" && !guestUser && <InitModal />}
     </>
   );
