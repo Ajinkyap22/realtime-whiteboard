@@ -13,6 +13,7 @@ const Navbar = () => {
   const pathname = usePathname();
 
   const guestUser = useBoundStore((state) => state.guestUser);
+  const clientId = useBoundStore((state) => state.clientId);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setClientId = useBoundStore((state) => state.setClientId);
 
@@ -24,11 +25,21 @@ const Navbar = () => {
     signOut();
   };
 
-  // useEffect(() => {
-  //   if (status === "unauthenticated" && !guestUser) {
-  //     router.push("/");
-  //   }
-  // }, [status, guestUser, router]);
+  const handleLeaveBoard = () => {
+    if (status === "authenticated") {
+      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
+    } else {
+      setGuestUser(null);
+      setClientId(null);
+      router.push("/");
+    }
+  };
+
+  useEffect(() => {
+    if (status === "unauthenticated" && !guestUser && clientId) {
+      router.push("/");
+    }
+  }, [status, guestUser, router, clientId]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -64,6 +75,12 @@ const Navbar = () => {
           </Text>
         </Button>
       )}
+
+      <Button onClick={handleLeaveBoard}>
+        <Text fontWeight="normal" fontSize="sm">
+          Leave board
+        </Text>
+      </Button>
     </HStack>
   );
 };

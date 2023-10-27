@@ -6,7 +6,7 @@ import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import uniqid from "uniqid";
 import { Avatar, AvatarGroup, Box, VStack, useToast } from "@chakra-ui/react";
-import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
+import { CursorUpdate, ProfileData, Space, SpaceMember } from "@ably/spaces";
 
 import InitModal from "@/app/board/components/InitModal";
 import Cursor from "@/app/board/components/Cursor";
@@ -26,9 +26,10 @@ type Props = {
 const Board = ({ params }: Props) => {
   const [members, setMembers] = useState<SpaceMember[]>([]);
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
-  const { data: session, status } = useSession();
-  const guestUser = useBoundStore((state) => state.guestUser);
 
+  const { data: session, status } = useSession();
+
+  const guestUser = useBoundStore((state) => state.guestUser);
   const clientId = useBoundStore((state) => state.clientId);
   const setClientId = useBoundStore((state) => state.setClientId);
 
