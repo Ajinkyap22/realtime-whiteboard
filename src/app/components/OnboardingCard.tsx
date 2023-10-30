@@ -15,9 +15,12 @@ type Props = {
 const OnboardingCard = ({ type }: Props) => {
   const router = useRouter();
   const { status } = useSession();
+
   const guestUser = useBoundStore((state) => state.guestUser);
+  const board = useBoundStore((state) => state.board);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setClientId = useBoundStore((state) => state.setClientId);
+  const setBoard = useBoundStore((state) => state.setBoard);
 
   const handleSignIn = () => {
     signIn("google");
@@ -25,6 +28,13 @@ const OnboardingCard = ({ type }: Props) => {
 
   const handleCreateBoard = () => {
     const id = uniqid();
+
+    const board = {
+      name: "Untitled",
+      id,
+    };
+
+    setBoard(board);
     router.push(`/board/${id}`);
   };
 
@@ -34,9 +44,11 @@ const OnboardingCard = ({ type }: Props) => {
     if (status === "authenticated") {
       // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
       handleCreateBoard();
+    } else if (!!guestUser && !!board) {
+      router.push(`/board/${board.id}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+  }, [status, guestUser, board]);
 
   useEffect(() => {
     if (status === "authenticated") {

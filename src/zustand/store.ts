@@ -15,6 +15,7 @@ export const useBoundStore = create<UserSlice & BoardSlice>()(
       partialize: (state) => ({
         guestUser: state.guestUser,
         clientId: state.clientId,
+        board: state.board,
       }),
     }
   )

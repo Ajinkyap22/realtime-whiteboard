@@ -16,6 +16,7 @@ const Navbar = () => {
   const clientId = useBoundStore((state) => state.clientId);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setClientId = useBoundStore((state) => state.setClientId);
+  const setBoard = useBoundStore((state) => state.setBoard);
 
   const handleSignIn = () => {
     signIn("google");
@@ -31,6 +32,7 @@ const Navbar = () => {
     } else {
       setGuestUser(null);
       setClientId(null);
+      setBoard(null);
       router.push("/");
     }
   };
