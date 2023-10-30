@@ -7,8 +7,6 @@ import SessionProvider from "@/app/providers/SessionProvider";
 
 import { getServerSession } from "next-auth";
 
-import Navbar from "@/app/components/Navbar";
-
 const figtree = Figtree({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -30,11 +28,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={figtree.className}>
         <SessionProvider session={session}>
-          <ChakraProvider>
-            <Navbar />
-
-            {children}
-          </ChakraProvider>
+          <ChakraProvider>{children}</ChakraProvider>
         </SessionProvider>
       </body>
     </html>

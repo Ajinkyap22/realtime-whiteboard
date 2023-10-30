@@ -26,6 +26,8 @@ import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
 import { useRouter } from "next/navigation";
+import Navbar from "@/app/components/Navbar";
+import Whiteboard from "../components/Whiteboard";
 
 type Props = {
   params: {
@@ -205,7 +207,9 @@ const Board = ({ params }: Props) => {
   }, [clientId, session, guestUser, setClientId]);
 
   return (
-    <>
+    <VStack minH="full" w="full" position="relative">
+      <Navbar />
+      <Whiteboard />
       {/* Cursor */}
       {membersLocation && membersLocation.length > 0 ? (
         <Box>
@@ -231,10 +235,10 @@ const Board = ({ params }: Props) => {
         </Box>
       ) : null}
 
-      <HStack p="3">
+      <HStack p="3" w="full" flex={1}>
         <p>Board</p>
-        <HStack justifyContent="flex-end" w="full">
-          {" "}
+
+        <HStack w="full" justifyContent="flex-end">
           {/* Avatar stack */}
           {members && members.length > 0 ? (
             <AvatarGroup>
@@ -259,7 +263,7 @@ const Board = ({ params }: Props) => {
       </HStack>
 
       {status === "unauthenticated" && !guestUser && <InitModal />}
-    </>
+    </VStack>
   );
 };
 
