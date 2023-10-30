@@ -25,6 +25,7 @@ export const subscribeTheUser = async (
   boardName: string,
   profileData: ProfileData
 ) => {
+  console.log("Subscribing the user");
   const space = await getSpace(clientName, boardName);
 
   await space.enter(profileData);
@@ -36,6 +37,8 @@ export const unsubscribeTheUser = async (
   clientName: string,
   boardName: string
 ) => {
+  console.log("Unsubscribing the user");
+  console.log(clientName, boardName);
   const space = await getSpace(clientName, boardName);
 
   await space.leave({ name: clientName });

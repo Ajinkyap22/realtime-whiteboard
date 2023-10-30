@@ -26,17 +26,6 @@ const Navbar = () => {
     signOut();
   };
 
-  const handleLeaveBoard = () => {
-    if (status === "authenticated") {
-      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
-    } else {
-      setGuestUser(null);
-      setClientId(null);
-      setBoard(null);
-      router.push("/");
-    }
-  };
-
   useEffect(() => {
     if (status === "unauthenticated" && !guestUser && clientId) {
       router.push("/");
@@ -77,12 +66,6 @@ const Navbar = () => {
           </Text>
         </Button>
       )}
-
-      <Button onClick={handleLeaveBoard}>
-        <Text fontWeight="normal" fontSize="sm">
-          Leave board
-        </Text>
-      </Button>
     </HStack>
   );
 };

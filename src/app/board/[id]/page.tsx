@@ -5,7 +5,16 @@ import React, { useEffect, useState } from "react";
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import uniqid from "uniqid";
-import { Avatar, AvatarGroup, Box, VStack, useToast } from "@chakra-ui/react";
+import {
+  Avatar,
+  AvatarGroup,
+  Box,
+  Button,
+  HStack,
+  Text,
+  VStack,
+  useToast,
+} from "@chakra-ui/react";
 import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 
 import InitModal from "@/app/board/components/InitModal";
@@ -16,6 +25,7 @@ import { subscribeTheUser, unsubscribeTheUser } from "@/app/config/ably";
 import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
+import { useRouter } from "next/navigation";
 
 type Props = {
   params: {
@@ -29,9 +39,13 @@ const Board = ({ params }: Props) => {
 
   const { data: session, status } = useSession();
 
+  const router = useRouter();
+
   const guestUser = useBoundStore((state) => state.guestUser);
   const clientId = useBoundStore((state) => state.clientId);
   const setClientId = useBoundStore((state) => state.setClientId);
+  const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const setBoard = useBoundStore((state) => state.setBoard);
 
   const toast = useToast();
 
@@ -143,6 +157,17 @@ const Board = ({ params }: Props) => {
     });
   };
 
+  const handleLeaveBoard = async () => {
+    if (status === "authenticated") {
+      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
+    } else {
+      // await unsubscribeTheUser(clientId!, params.id);
+      setGuestUser(null);
+      setClientId(null);
+      setBoard(null);
+      router.push("/");
+    }
+  };
   const handleSaveBoard = () => {};
 
   useEffect(() => {
@@ -206,20 +231,32 @@ const Board = ({ params }: Props) => {
         </Box>
       ) : null}
 
-      {/* Avatar stack */}
-      {members && members.length > 0 ? (
-        <AvatarGroup>
-          {members.map((member) => {
-            return (
-              <Avatar
-                key={member.clientId}
-                name={member?.profileData?.name as string}
-                src={member?.profileData?.avatar as string}
-              />
-            );
-          })}
-        </AvatarGroup>
-      ) : null}
+      <HStack p="3">
+        <p>Board</p>
+        <HStack justifyContent="flex-end" w="full">
+          {" "}
+          {/* Avatar stack */}
+          {members && members.length > 0 ? (
+            <AvatarGroup>
+              {members.map((member) => {
+                return (
+                  <Avatar
+                    key={member.clientId}
+                    name={member?.profileData?.name as string}
+                    src={member?.profileData?.avatar as string}
+                    size="sm"
+                  />
+                );
+              })}
+            </AvatarGroup>
+          ) : null}
+          <Button colorScheme="red" onClick={handleLeaveBoard}>
+            <Text fontWeight="normal" fontSize="sm">
+              Leave
+            </Text>
+          </Button>
+        </HStack>
+      </HStack>
 
       {status === "unauthenticated" && !guestUser && <InitModal />}
     </>

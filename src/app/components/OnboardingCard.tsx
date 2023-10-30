@@ -44,8 +44,13 @@ const OnboardingCard = ({ type }: Props) => {
     if (status === "authenticated") {
       // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
       handleCreateBoard();
-    } else if (!!guestUser && !!board) {
-      router.push(`/board/${board.id}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
+
+  useEffect(() => {
+    if (status === "unauthenticated" && !!guestUser && !!board) {
+      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, guestUser, board]);
