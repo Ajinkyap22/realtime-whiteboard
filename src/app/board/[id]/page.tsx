@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
@@ -26,6 +25,9 @@ import { subscribeTheUser, unsubscribeTheUser } from "@/app/config/ably";
 import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
+import { useRouter } from "next/navigation";
+import { useMutation } from "react-query";
+import { addParticipant } from "@/services/boardService";
 
 type Props = {
   params: {
@@ -48,6 +50,10 @@ const Board = ({ params }: Props) => {
   const setBoard = useBoundStore((state) => state.setBoard);
 
   const toast = useToast();
+
+  const addParticipantMutation = useMutation(
+    ({ id, user }: { id: string; user: string }) => addParticipant(id, user)
+  );
 
   const getToastTitleForUserEvent = (event: string) => {
     switch (event) {
@@ -163,7 +169,7 @@ const Board = ({ params }: Props) => {
     setBoard(null);
 
     if (status === "authenticated") {
-      window.location.href = "/";
+      window.location.href = "/boards";
     } else {
       window.location.href = "/";
     }
@@ -184,13 +190,6 @@ const Board = ({ params }: Props) => {
   }, [status, guestUser, clientId]);
 
   useEffect(() => {
-    return () => {
-      handleUnsubscribe();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     if (!guestUser && !session?.user?.name) return;
 
     if (!clientId) {
@@ -204,6 +203,16 @@ const Board = ({ params }: Props) => {
       );
     }
   }, [clientId, session, guestUser, setClientId]);
+
+  // add participants to the board
+  useEffect(() => {
+    if (status === "authenticated") {
+      addParticipantMutation.mutate({
+        id: params.id,
+        user: session?.user?.email as string,
+      });
+    }
+  }, []);
 
   return (
     <VStack minH="full" w="full" position="relative">
