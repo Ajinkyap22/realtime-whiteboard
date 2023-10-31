@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
@@ -9,9 +10,7 @@ import {
   Avatar,
   AvatarGroup,
   Box,
-  Button,
   HStack,
-  Text,
   VStack,
   useToast,
 } from "@chakra-ui/react";
@@ -19,15 +18,14 @@ import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 
 import InitModal from "@/app/board/components/InitModal";
 import Cursor from "@/app/board/components/Cursor";
+import Whiteboard from "@/app/board/components/Whiteboard";
+import Navbar from "@/app/components/Navbar";
 
 import { subscribeTheUser, unsubscribeTheUser } from "@/app/config/ably";
 
 import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
-import { useRouter } from "next/navigation";
-import Navbar from "@/app/components/Navbar";
-import Whiteboard from "../components/Whiteboard";
 
 type Props = {
   params: {
@@ -160,16 +158,17 @@ const Board = ({ params }: Props) => {
   };
 
   const handleLeaveBoard = async () => {
+    setGuestUser(null);
+    setClientId(null);
+    setBoard(null);
+
     if (status === "authenticated") {
-      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
+      window.location.href = "/";
     } else {
-      // await unsubscribeTheUser(clientId!, params.id);
-      setGuestUser(null);
-      setClientId(null);
-      setBoard(null);
-      router.push("/");
+      window.location.href = "/";
     }
   };
+
   const handleSaveBoard = () => {};
 
   useEffect(() => {
@@ -208,8 +207,10 @@ const Board = ({ params }: Props) => {
 
   return (
     <VStack minH="full" w="full" position="relative">
-      <Navbar />
+      <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
+
       <Whiteboard />
+
       {/* Cursor */}
       {membersLocation && membersLocation.length > 0 ? (
         <Box>
@@ -234,33 +235,6 @@ const Board = ({ params }: Props) => {
           })}
         </Box>
       ) : null}
-
-      <HStack p="3" w="full" flex={1}>
-        <p>Board</p>
-
-        <HStack w="full" justifyContent="flex-end">
-          {/* Avatar stack */}
-          {members && members.length > 0 ? (
-            <AvatarGroup>
-              {members.map((member) => {
-                return (
-                  <Avatar
-                    key={member.clientId}
-                    name={member?.profileData?.name as string}
-                    src={member?.profileData?.avatar as string}
-                    size="sm"
-                  />
-                );
-              })}
-            </AvatarGroup>
-          ) : null}
-          <Button colorScheme="red" onClick={handleLeaveBoard}>
-            <Text fontWeight="normal" fontSize="sm">
-              Leave
-            </Text>
-          </Button>
-        </HStack>
-      </HStack>
 
       {status === "unauthenticated" && !guestUser && <InitModal />}
     </VStack>
