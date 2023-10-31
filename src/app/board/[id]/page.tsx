@@ -9,9 +9,7 @@ import {
   Avatar,
   AvatarGroup,
   Box,
-  Button,
   HStack,
-  Text,
   VStack,
   useToast,
 } from "@chakra-ui/react";
@@ -19,6 +17,8 @@ import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 
 import InitModal from "@/app/board/components/InitModal";
 import Cursor from "@/app/board/components/Cursor";
+import Whiteboard from "@/app/board/components/Whiteboard";
+import Navbar from "@/app/components/Navbar";
 
 import { subscribeTheUser, unsubscribeTheUser } from "@/app/config/ably";
 
@@ -215,7 +215,11 @@ const Board = ({ params }: Props) => {
   }, []);
 
   return (
-    <>
+    <VStack minH="full" w="full" position="relative">
+      <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
+
+      <Whiteboard />
+
       {/* Cursor */}
       {membersLocation && membersLocation.length > 0 ? (
         <Box>
@@ -241,35 +245,8 @@ const Board = ({ params }: Props) => {
         </Box>
       ) : null}
 
-      <HStack p="3">
-        <p>Board</p>
-        <HStack justifyContent="flex-end" w="full">
-          {" "}
-          {/* Avatar stack */}
-          {members && members.length > 0 ? (
-            <AvatarGroup>
-              {members.map((member) => {
-                return (
-                  <Avatar
-                    key={member.clientId}
-                    name={member?.profileData?.name as string}
-                    src={member?.profileData?.avatar as string}
-                    size="sm"
-                  />
-                );
-              })}
-            </AvatarGroup>
-          ) : null}
-          <Button colorScheme="red" onClick={handleLeaveBoard}>
-            <Text fontWeight="normal" fontSize="sm">
-              Leave
-            </Text>
-          </Button>
-        </HStack>
-      </HStack>
-
       {status === "unauthenticated" && !guestUser && <InitModal />}
-    </>
+    </VStack>
   );
 };
 
