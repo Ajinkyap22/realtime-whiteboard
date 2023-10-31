@@ -4,7 +4,7 @@ import axios from "axios";
 
 const clientId = process.env.GOOGLE_CLIENT_ID ?? "";
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET ?? "";
-const apiURL = process.env.API_URL ?? "";
+const apiURL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 const authOptions = {
   providers: [

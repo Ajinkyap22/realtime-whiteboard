@@ -5,14 +5,14 @@ import React, { useEffect } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { VStack, Text, Button } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import uniqid from "uniqid";
 import { useBoundStore } from "@/zustand/store";
 
 type Props = {
   type: "create-board" | "sign in";
+  handleCreateBoard: () => void;
 };
 
-const OnboardingCard = ({ type }: Props) => {
+const OnboardingCard = ({ type, handleCreateBoard }: Props) => {
   const router = useRouter();
   const { status } = useSession();
 
@@ -20,37 +20,14 @@ const OnboardingCard = ({ type }: Props) => {
   const board = useBoundStore((state) => state.board);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setClientId = useBoundStore((state) => state.setClientId);
-  const setBoard = useBoundStore((state) => state.setBoard);
 
   const handleSignIn = () => {
     signIn("google");
   };
 
-  const handleCreateBoard = () => {
-    const id = uniqid();
-
-    const board = {
-      name: "Untitled",
-      id,
-    };
-
-    setBoard(board);
-    router.push(`/board/${id}`);
-  };
-
-  const handleCreateBoardWithSignIn = () => {};
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
-      handleCreateBoard();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
-
   useEffect(() => {
     if (status === "unauthenticated" && !!guestUser && !!board) {
-      // TODO: after integrating with backend, check if user has any boards if not then create a new board and redirect to it
+      router.push(`/board/${board.id}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, guestUser, board]);
