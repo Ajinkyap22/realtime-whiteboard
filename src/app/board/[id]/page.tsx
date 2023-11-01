@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import uniqid from "uniqid";
-import { Box, VStack, useToast } from "@chakra-ui/react";
+import { Box, Button, VStack, useToast } from "@chakra-ui/react";
 import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 import { useMutation, useQuery } from "react-query";
 
@@ -14,15 +14,20 @@ import Cursor from "@/app/board/components/Cursor";
 import Whiteboard from "@/app/board/components/Whiteboard";
 import Navbar from "@/app/components/Navbar";
 
-import { subscribeTheUser } from "@/app/config/ably";
+import { getSpace, subscribeTheUser } from "@/app/config/ably";
 
 import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
 
-import { addParticipant, checkValidBoardId } from "@/services/boardService";
+import {
+  addParticipant,
+  checkValidBoardId,
+  updateBoard,
+} from "@/services/boardService";
 import Loading from "@/app/loading";
 import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
+import { Types } from "ably";
 
 type Props = {
   params: {
@@ -41,6 +46,11 @@ const Board = ({ params }: Props) => {
   const setClientId = useBoundStore((state) => state.setClientId);
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setBoard = useBoundStore((state) => state.setBoard);
+  const board = useBoundStore((state) => state.board);
+  const [boardIdTracker, setBoardIdTracker] = useState<{
+    isValid: boolean;
+    hostType: string;
+  } | null>(null);
 
   const toast = useToast();
 
@@ -48,13 +58,28 @@ const Board = ({ params }: Props) => {
     ({ id, user }: { id: string; user: string }) => addParticipant(id, user)
   );
 
-  const {
-    data: boardIdTracker,
-    isError: boardIdError,
-    isLoading: validatingBoard,
-  } = useQuery("checkValidBoardId", () => checkValidBoardId(params.id), {
-    retry: false,
-  });
+  const updateBoardMutation = useMutation(
+    ({
+      boardId,
+      boardName,
+      boardData,
+    }: {
+      boardId: string;
+      boardName: string;
+      boardData: string;
+    }) => updateBoard(boardId, boardName, boardData)
+  );
+
+  const { isError: boardIdError, isLoading: validatingBoard } = useQuery(
+    ["checkValidBoardId", params.id],
+    () => checkValidBoardId(params.id),
+    {
+      retry: false,
+      onSuccess: (data) => {
+        setBoardIdTracker(data);
+      },
+    }
+  );
 
   const getToastTitleForUserEvent = (event: string) => {
     switch (event) {
@@ -135,6 +160,11 @@ const Board = ({ params }: Props) => {
     });
   };
 
+  const handleCanvaEvent = (message: Types.Message) => {
+    // TODO: get the data as string and parse it and provide that to canva
+    console.log("canvaData", message.data);
+  };
+
   const handleAblyConnection = async () => {
     if (validatingBoard) return;
     if (!boardIdTracker?.isValid) return;
@@ -154,6 +184,10 @@ const Board = ({ params }: Props) => {
       handleUserEvent(message);
     });
 
+    space.channel.subscribe("canvaEvent", (message) => {
+      handleCanvaEvent(message);
+    });
+
     space.cursors.subscribe("update", (cursorEvent) => {
       handleCursorEvent(cursorEvent);
     });
@@ -161,6 +195,12 @@ const Board = ({ params }: Props) => {
     window.addEventListener("mousemove", ({ clientX, clientY }) => {
       space.cursors.set({ position: { x: clientX, y: clientY } });
     });
+  };
+
+  const handlePublishEvent = async () => {
+    const space = await getSpace(clientId!, params.id);
+    // TODO: publish the board data
+    await space.channel.publish("canvaEvent", "hello world");
   };
 
   const handleLeaveBoard = async () => {
@@ -175,7 +215,13 @@ const Board = ({ params }: Props) => {
     }
   };
 
-  const handleSaveBoard = () => {};
+  const handleSaveBoard = () => {
+    updateBoardMutation.mutate({
+      boardId: params.id,
+      boardName: board?.name as string,
+      boardData: board?.boardData as string,
+    });
+  };
 
   useEffect(() => {
     if (status === "authenticated" && boardIdTracker?.hostType === "user") {
@@ -187,7 +233,7 @@ const Board = ({ params }: Props) => {
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, guestUser, clientId]);
+  }, [status, guestUser, clientId, boardIdTracker?.isValid]);
 
   useEffect(() => {
     if (!guestUser && !session?.user?.name) return;

@@ -69,3 +69,17 @@ export const checkValidBoardId = async (boardId: string) => {
 
   return response.data;
 };
+
+export const updateBoard = async (
+  boardId: string,
+  boardName: string,
+  boardData: string
+) => {
+  const response = await axiosInstance.post("/update-board", {
+    boardId,
+    boardName,
+    boardData,
+  });
+
+  return response.data;
+};
