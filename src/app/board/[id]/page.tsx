@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import uniqid from "uniqid";
 import { Box, VStack, useToast } from "@chakra-ui/react";
 import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 
 import InitModal from "@/app/board/components/InitModal";
 import Cursor from "@/app/board/components/Cursor";
@@ -20,7 +20,9 @@ import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
 
-import { addParticipant } from "@/services/boardService";
+import { addParticipant, checkValidBoardId } from "@/services/boardService";
+import Loading from "@/app/loading";
+import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
 
 type Props = {
   params: {
@@ -45,6 +47,14 @@ const Board = ({ params }: Props) => {
   const addParticipantMutation = useMutation(
     ({ id, user }: { id: string; user: string }) => addParticipant(id, user)
   );
+
+  const {
+    data: boardIdTracker,
+    isError: boardIdError,
+    isLoading: validatingBoard,
+  } = useQuery("checkValidBoardId", () => checkValidBoardId(params.id), {
+    retry: false,
+  });
 
   const getToastTitleForUserEvent = (event: string) => {
     switch (event) {
@@ -126,6 +136,9 @@ const Board = ({ params }: Props) => {
   };
 
   const handleAblyConnection = async () => {
+    if (validatingBoard) return;
+    if (!boardIdTracker?.isValid) return;
+    if (boardIdError) return;
     if (!clientId) return;
 
     const profileData: ProfileData = {
@@ -165,11 +178,11 @@ const Board = ({ params }: Props) => {
   const handleSaveBoard = () => {};
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && boardIdTracker?.hostType === "user") {
       handleSaveBoard();
     }
     // TODO: add dependency of board data
-  }, []);
+  }, [boardIdTracker, status]);
 
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();
@@ -193,47 +206,61 @@ const Board = ({ params }: Props) => {
 
   // add participants to the board
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && boardIdTracker?.hostType === "user") {
       addParticipantMutation.mutate({
         id: params.id,
         user: session?.user?.email as string,
       });
     }
-  }, []);
+  }, [boardIdTracker, status]);
 
   return (
-    <VStack minH="full" w="full" position="relative">
-      <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
+    <>
+      {validatingBoard ? (
+        <Loading />
+      ) : (
+        <VStack minH="full" w="full" position="relative">
+          {boardIdError || boardIdTracker?.isValid === false ? (
+            <InvalidBoardModal />
+          ) : (
+            <>
+              <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
 
-      <Whiteboard />
+              <Whiteboard />
 
-      {/* Cursor */}
-      {membersLocation && membersLocation.length > 0 ? (
-        <Box>
-          {membersLocation.map((memberLocation) => {
-            if (memberLocation.member.clientId === clientId) {
-              return null;
-            }
+              {/* Cursor */}
+              {membersLocation && membersLocation.length > 0 ? (
+                <Box>
+                  {membersLocation.map((memberLocation) => {
+                    if (memberLocation.member.clientId === clientId) {
+                      return null;
+                    }
 
-            return (
-              <VStack
-                key={memberLocation.member.clientId}
-                position="absolute"
-                left={memberLocation.x + "px"}
-                top={memberLocation.y + "px"}
-                zIndex={1000}
-                alignItems="center"
-              >
-                <Cursor />
-                <p>{memberLocation.member?.profileData?.name as string}</p>
-              </VStack>
-            );
-          })}
-        </Box>
-      ) : null}
+                    return (
+                      <VStack
+                        key={memberLocation.member.clientId}
+                        position="absolute"
+                        left={memberLocation.x + "px"}
+                        top={memberLocation.y + "px"}
+                        zIndex={1000}
+                        alignItems="center"
+                      >
+                        <Cursor />
+                        <p>
+                          {memberLocation.member?.profileData?.name as string}
+                        </p>
+                      </VStack>
+                    );
+                  })}
+                </Box>
+              ) : null}
+            </>
+          )}
 
-      {status === "unauthenticated" && !guestUser && <InitModal />}
-    </VStack>
+          {status === "unauthenticated" && !guestUser && <InitModal />}
+        </VStack>
+      )}
+    </>
   );
 };
 
