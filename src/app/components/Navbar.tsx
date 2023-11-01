@@ -25,7 +25,6 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
   const guestUser = useBoundStore((state) => state.guestUser);
   const clientId = useBoundStore((state) => state.clientId);
-  const board = useBoundStore((state) => state.board);
 
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setClientId = useBoundStore((state) => state.setClientId);
@@ -52,7 +51,7 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
   if (pathname === "/") return null;
 
   return (
-    <HStack justifyContent="space-between" w="full" p="4">
+    <HStack justifyContent="space-between" w="full" p="4" px="6">
       <HStack
         bg="white"
         shadow="all-around"
@@ -73,7 +72,7 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
         <Divider />
 
         {/* board name & edit */}
-        <BoardName boardName={board?.boardName ?? "Untitled"} />
+        <BoardName />
 
         <Divider />
 

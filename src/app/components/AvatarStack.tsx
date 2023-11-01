@@ -10,7 +10,7 @@ type Props = {
 
 const AvatarStack = ({ members }: Props) => {
   return (
-    <AvatarGroup>
+    <AvatarGroup max={6}>
       {members.map((member) => (
         <Avatar
           key={member.clientId}

@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-import { HStack, Text, Image, useToast } from "@chakra-ui/react";
+import { HStack, Text, Image } from "@chakra-ui/react";
 import { useBoundStore } from "@/zustand/store";
 
-type Props = {
-  boardName: string;
-};
-
-const BoardName = ({ boardName }: Props) => {
+const BoardName = () => {
   const [editedBoardName, setEditedBoardName] = useState<string>("");
 
   const board = useBoundStore((state) => state.board);
@@ -23,15 +19,28 @@ const BoardName = ({ boardName }: Props) => {
         ...board,
         name: editedBoardName,
       });
-
-      setEditedBoardName("");
     }
+
+    setEditedBoardName("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
-      handleUpdateName();
+      if (editedBoardName) {
+        handleUpdateName();
+      } else {
+        e.currentTarget.innerText = board?.boardName ?? "Untitled";
+      }
+
       e.currentTarget.blur();
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
+    if (editedBoardName) {
+      handleUpdateName();
+    } else {
+      e.currentTarget.innerText = board?.boardName ?? "Untitled";
     }
   };
 
@@ -57,12 +66,12 @@ const BoardName = ({ boardName }: Props) => {
           },
         }}
         onInput={handleNameChange}
-        onBlur={handleUpdateName}
+        onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         contentEditable
         suppressContentEditableWarning
       >
-        {boardName}
+        {board?.boardName ?? "Untitled"}
       </Text>
     </HStack>
   );
