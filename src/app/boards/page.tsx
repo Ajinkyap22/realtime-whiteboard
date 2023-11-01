@@ -37,7 +37,8 @@ const Boards = () => {
 
   const { data: joinedBoards, isLoading: loadingJoinedBoards } = useQuery(
     "joinedBoards",
-    () => getJoinedBoards(session?.user?.email as string)
+    () => getJoinedBoards(session?.user?.email as string), {
+    }
   );
 
   useEffect(() => {

@@ -1,23 +1,18 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-import {
-  HStack,
-  Text,
-  Avatar,
-  Button,
-  Image,
-  useDisclosure,
-} from "@chakra-ui/react";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
+import { HStack, Text, Button, Image, useDisclosure } from "@chakra-ui/react";
+import { signOut, useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { useBoundStore } from "@/zustand/store";
 
 import ShareModal from "@/app/components/ShareModal";
+import Divider from "@/app/components/Divider";
 
 import { SpaceMember } from "@ably/spaces";
 import AvatarStack from "./AvatarStack";
+import BoardName from "./BoardName";
 
 type Props = {
   members?: SpaceMember[];
@@ -30,15 +25,12 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
   const guestUser = useBoundStore((state) => state.guestUser);
   const clientId = useBoundStore((state) => state.clientId);
+  const board = useBoundStore((state) => state.board);
 
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setClientId = useBoundStore((state) => state.setClientId);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const handleSignOut = () => {
-    signOut();
-  };
 
   useEffect(() => {
     if (status === "unauthenticated" && !guestUser && clientId) {
@@ -53,10 +45,56 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
     }
   }, [status, setGuestUser, setClientId]);
 
+  const handleSignOut = () => {
+    signOut();
+  };
+
   if (pathname === "/") return null;
 
   return (
-    <HStack justifyContent="flex-end" w="full" p="4">
+    <HStack justifyContent="space-between" w="full" p="4">
+      <HStack
+        bg="white"
+        shadow="all-around"
+        px="4"
+        py="1.5"
+        borderRadius="md"
+        gap="4"
+        zIndex={1}
+      >
+        {/* logo */}
+        <HStack gap="4">
+          <Image src="/icons/logo.svg" alt="Syncboard" w="6" h="6" />
+          <Text fontSize="md" color="darkPrimary">
+            Syncboard
+          </Text>
+        </HStack>
+
+        <Divider />
+
+        {/* board name & edit */}
+        <BoardName boardName={board?.boardName ?? "Untitled"} />
+
+        <Divider />
+
+        {/* download button */}
+        <HStack
+          as={Button}
+          h="0"
+          py="5"
+          px="4"
+          bg="transparent"
+          _hover={{
+            bg: "gray.50",
+          }}
+        >
+          <Image src="/icons/download.svg" alt="edit" w="5" h="5" />
+          <Text fontSize="sm" color="darkPrimary" fontWeight="normal">
+            Download
+          </Text>
+        </HStack>
+      </HStack>
+
       <HStack
         bg="white"
         shadow="all-around"
@@ -69,11 +107,27 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
         {handleLeaveBoard && (
           <>
-            <Button colorScheme="messenger" onClick={onOpen}>
+            <Button
+              bg="#687EFF"
+              color="white"
+              onClick={onOpen}
+              _hover={{
+                bg: "#596cdc",
+                color: "white",
+              }}
+            >
               <Text fontSize="sm">Share board</Text>
             </Button>
 
-            <Button colorScheme="red" onClick={handleLeaveBoard}>
+            <Button
+              bg="#df5d5d"
+              color="white"
+              onClick={handleLeaveBoard}
+              _hover={{
+                bg: "#cc5151",
+                color: "white",
+              }}
+            >
               <Text fontSize="sm">Leave</Text>
             </Button>
           </>
