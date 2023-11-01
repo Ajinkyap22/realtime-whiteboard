@@ -17,7 +17,7 @@ import {
 import { useMutation } from "react-query";
 import uniqid from "uniqid";
 
-import { createBoard } from "@/services/boardService";
+import { createBoard, saveBoardIdTracker } from "@/services/boardService";
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -40,6 +40,11 @@ const CreateModal = ({ isOpen, onClose }: Props) => {
       createBoard(id, name, user)
   );
 
+  const saveBoardIdTrackerMutation = useMutation(
+    ({ boardId, hostType }: { boardId: string; hostType: string }) =>
+      saveBoardIdTracker(boardId, hostType)
+  );
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBoardName(e.target.value);
   };
@@ -53,6 +58,11 @@ const CreateModal = ({ isOpen, onClose }: Props) => {
     };
 
     setBoard(board);
+
+    saveBoardIdTrackerMutation.mutate({
+      boardId: id,
+      hostType: "user",
+    });
 
     createBoardMutation.mutate({
       id,
