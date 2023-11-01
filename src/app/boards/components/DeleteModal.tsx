@@ -36,7 +36,7 @@ const DeleteModal = ({
 
       <ModalContent>
         <ModalHeader color="darkPrimary" textAlign="center">
-          <Text>Create a new board</Text>
+          <Text>Delete Board</Text>
         </ModalHeader>
 
         <ModalBody pb="6" as={VStack} gap="6">

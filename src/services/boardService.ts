@@ -52,6 +52,20 @@ export const deleteBoard = async (boardId: string, user: string) => {
 export const doesUserHaveBoards = async (user: string) => {
   const response = await axiosInstance.get("/user-has-boards/" + user);
 
-
   return response.data.hasBoards;
+};
+
+export const saveBoardIdTracker = async (boardId: string, hostType: string) => {
+  const response = await axiosInstance.post("/save-board-id-tracker", {
+    boardId,
+    hostType,
+  });
+
+  return response.data;
+};
+
+export const checkValidBoardId = async (boardId: string) => {
+  const response = await axiosInstance.get("/validate-boardid/" + boardId);
+
+  return response.data;
 };

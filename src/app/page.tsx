@@ -13,7 +13,11 @@ import uniqid from "uniqid";
 import { useMutation } from "react-query";
 import { useBoundStore } from "@/zustand/store";
 
-import { createBoard, doesUserHaveBoards } from "@/services/boardService";
+import {
+  createBoard,
+  doesUserHaveBoards,
+  saveBoardIdTracker,
+} from "@/services/boardService";
 
 export default function Home() {
   const router = useRouter();
@@ -30,6 +34,11 @@ export default function Home() {
   const createBoardMutation = useMutation(
     ({ id, name, user }: { id: string; name: string; user: string }) =>
       createBoard(id, name, user)
+  );
+
+  const saveBoardIdTrackerMutation = useMutation(
+    ({ boardId, hostType }: { boardId: string; hostType: string }) =>
+      saveBoardIdTracker(boardId, hostType)
   );
 
   const handleCreateBoard = async () => {
@@ -54,6 +63,11 @@ export default function Home() {
     };
 
     setBoard(board);
+
+    saveBoardIdTrackerMutation.mutate({
+      boardId: id,
+      hostType: isAuthenticated ? "user" : "guest",
+    });
 
     if (isAuthenticated) {
       createBoardMutation.mutate({
