@@ -1,22 +1,25 @@
-import { VStack, HStack, Text, Image, Button } from "@chakra-ui/react";
 import React from "react";
 
-type Props = {};
+import { ActiveTool } from "@/types/ActiveTool";
 
-const Toolbox = (props: Props) => {
+import { VStack, Image, Button } from "@chakra-ui/react";
+
+type Props = {
+  switchActiveTool: (tool: ActiveTool) => void;
+};
+
+const Toolbox = ({ switchActiveTool }: Props) => {
   return (
     <VStack h="full" justifyContent="center">
       <VStack
         bg="white"
         shadow="all-around"
         mx="4"
-        px="3"
-        py="1.5"
         borderRadius="md"
-        gap="4"
         zIndex={1}
       >
         <Button
+          onClick={() => switchActiveTool(ActiveTool.BRUSH)}
           py="5"
           px="4"
           bg="transparent"
@@ -24,9 +27,11 @@ const Toolbox = (props: Props) => {
             bg: "gray.50",
           }}
         >
-          <Image src="/icons/marker.svg" alt="marker" w="7" h="7" />
+          <Image src="/icons/marker.svg" alt="marker" w="6" h="6" />
         </Button>
+
         <Button
+          onClick={() => switchActiveTool(ActiveTool.TEXT)}
           py="5"
           px="4"
           bg="transparent"
@@ -34,7 +39,7 @@ const Toolbox = (props: Props) => {
             bg: "gray.50",
           }}
         >
-          <Image src="/icons/text-icon.svg" alt="text-icon" w="7" h="7" />
+          <Image src="/icons/text-icon.svg" alt="text-icon" w="6" h="6" />
         </Button>
       </VStack>
     </VStack>

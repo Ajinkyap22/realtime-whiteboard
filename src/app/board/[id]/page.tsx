@@ -23,7 +23,8 @@ import type { MembersLocation } from "@/app/types/MembersLocation";
 import { addParticipant, checkValidBoardId } from "@/services/boardService";
 import Loading from "@/app/loading";
 import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
-import Toolbox from "@/app/components/Toolbox";
+import Toolbox from "@/app/board/components/Toolbox";
+import { ActiveTool } from "@/types/ActiveTool";
 
 type Props = {
   params: {
@@ -34,6 +35,7 @@ type Props = {
 const Board = ({ params }: Props) => {
   const [members, setMembers] = useState<SpaceMember[]>([]);
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
+  const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
 
   const { data: session, status } = useSession();
 
@@ -178,6 +180,10 @@ const Board = ({ params }: Props) => {
 
   const handleSaveBoard = () => {};
 
+  const switchActiveTool = (tool: ActiveTool) => {
+    setActiveTool(tool);
+  };
+
   useEffect(() => {
     if (status === "authenticated" && boardIdTracker?.hostType === "user") {
       handleSaveBoard();
@@ -232,9 +238,9 @@ const Board = ({ params }: Props) => {
             <>
               <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
 
-              <Toolbox />
+              <Toolbox switchActiveTool={switchActiveTool} />
 
-              <Whiteboard />
+              <Whiteboard activeTool={activeTool} />
 
               {/* Cursor */}
               {membersLocation && membersLocation.length > 0 ? (
