@@ -36,6 +36,7 @@ const Board = ({ params }: Props) => {
   const [members, setMembers] = useState<SpaceMember[]>([]);
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
   const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
+  const [selection, setSelection] = useState<boolean>(false);
 
   const { data: session, status } = useSession();
 
@@ -238,9 +239,17 @@ const Board = ({ params }: Props) => {
             <>
               <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
 
-              <Toolbox switchActiveTool={switchActiveTool} />
+              <Toolbox
+                switchActiveTool={switchActiveTool}
+                setSelection={setSelection}
+              />
 
-              <Whiteboard activeTool={activeTool} />
+              <Whiteboard
+                activeTool={activeTool}
+                selection={selection}
+                setSelection={setSelection}
+                switchActiveTool={switchActiveTool}
+              />
 
               {/* Cursor */}
               {membersLocation && membersLocation.length > 0 ? (
