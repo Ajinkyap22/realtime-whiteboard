@@ -23,6 +23,7 @@ import type { MembersLocation } from "@/app/types/MembersLocation";
 import { addParticipant, checkValidBoardId } from "@/services/boardService";
 import Loading from "@/app/loading";
 import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
+import Toolbox from "@/app/components/Toolbox";
 
 type Props = {
   params: {
@@ -215,16 +216,23 @@ const Board = ({ params }: Props) => {
   }, [boardIdTracker, status]);
 
   return (
-    <>
+    <VStack h="full" w="full">
       {validatingBoard ? (
         <Loading />
       ) : (
-        <VStack minH="full" w="full" position="relative">
+        <VStack
+          minH="full"
+          w="full"
+          position="relative"
+          alignItems="flex-start"
+        >
           {boardIdError || boardIdTracker?.isValid === false ? (
             <InvalidBoardModal />
           ) : (
             <>
               <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
+
+              <Toolbox />
 
               <Whiteboard />
 
@@ -260,7 +268,7 @@ const Board = ({ params }: Props) => {
           {status === "unauthenticated" && !guestUser && <InitModal />}
         </VStack>
       )}
-    </>
+    </VStack>
   );
 };
 
