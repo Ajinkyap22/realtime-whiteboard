@@ -1,110 +1,123 @@
 "use client";
 
-import { deleteBoard, getMyBoards } from "@/services/boardService";
-import { Board } from "@/types/Board";
-import {
-  Button,
-  HStack,
-  Image,
-  Text,
-  VStack,
-  useToast,
-} from "@chakra-ui/react";
+import React, { useEffect } from "react";
+
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+
+import { getJoinedBoards, getMyBoards } from "@/services/boardService";
+
+import { Board } from "@/types/Board";
+
+import {
+  Text,
+  VStack,
+  SimpleGrid,
+  useDisclosure,
+  GridItem,
+} from "@chakra-ui/react";
+
+import { useQuery } from "react-query";
+
 import Loading from "@/app/loading";
+import Navbar from "@/app/boards/components/Navbar";
+import BoardCard from "@/app/boards/components/BoardCard";
+import CreateBoardCard from "@/app/boards/components/CreateBoardCard";
+import CreateModal from "@/app/boards/components/CreateModal";
 
-type Props = {};
-
-const Boards = (props: Props) => {
+const Boards = () => {
   const { status, data: session } = useSession();
   const router = useRouter();
-  const toast = useToast();
 
-  const queryClient = useQueryClient();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data, isLoading, isError } = useQuery("boards", () =>
+  const { data: boards, isLoading } = useQuery("boards", () =>
     getMyBoards(session?.user?.email as string)
   );
 
-  const { isLoading: isDeleting, mutate: deleteBoardMutation } = useMutation(
-    ({ boardId, user }: { boardId: string; user: string }) =>
-      deleteBoard(boardId, user)
+  const { data: joinedBoards, isLoading: loadingJoinedBoards } = useQuery(
+    "joinedBoards",
+    () => getJoinedBoards(session?.user?.email as string)
   );
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/");
     }
-  }, [status]);
-
-  const handleDeleteBoard = (e: React.MouseEvent, boardId: string) => {
-    e.stopPropagation();
-    deleteBoardMutation(
-      {
-        boardId,
-        user: session?.user?.email as string,
-      },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries("boards");
-          toast({
-            title: "Board deleted",
-            status: "success",
-            duration: 3000,
-            isClosable: true,
-          });
-        },
-      }
-    );
-  };
+  }, [status, router]);
 
   return (
-    <>
-      <Button>Create board</Button>
-      <Text fontSize="3xl" p="3" color="darkPrimary">
+    <VStack
+      minH="full"
+      w="full"
+      position="relative"
+      alignItems="flex-start"
+      px="4"
+      className="graph-bg"
+    >
+      <Navbar />
+
+      <Text fontSize="2xl" p="3" color="darkPrimary" textAlign="start">
         My Boards
       </Text>
-      {isLoading && <Loading />}
-      <VStack p="3">
-        {data?.map((board: Board) => (
-          <HStack
-            onClick={() => router.push(`/board/${board.boardId}`)}
-            key={board.boardId}
-            p="4"
-            px="6"
-            border="2px"
-            borderColor="darkPrimary"
-            borderRadius="lg"
-            cursor="pointer"
-            w="full"
-            justifyContent="space-between"
-          >
-            <Text>{board.boardName}</Text>
-            <Button
-              colorScheme="red"
-              onClick={(e) => handleDeleteBoard(e, board.boardId as string)}
-            >
-              {isDeleting ? (
-                <Loading />
-              ) : (
-                <Image src="/icons/delete.svg" alt="Delete" w="4" h="4" />
-              )}
-            </Button>
-          </HStack>
-        ))}
-      </VStack>
-      {data?.length === 0 && (
-        <Text fontSize="lg" p="3" color="darkPrimary">
-          No boards found
-        </Text>
+
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <SimpleGrid
+          p="3"
+          w="full"
+          templateColumns="repeat(auto-fill, minmax(225px, 1fr))"
+          gap="6"
+        >
+          <CreateBoardCard handleCreate={onOpen} />
+
+          {boards?.map((board: Board) => (
+            <BoardCard
+              type="userBoard"
+              key={board.boardId!}
+              boardId={board.boardId!}
+              boardName={board.boardName!}
+              remainingParticipants={board.remainingCount!}
+              singleParticipantName={board.oneParticipantName}
+            />
+          ))}
+        </SimpleGrid>
       )}
-      <Text fontSize="3xl" p="3" color="darkPrimary">
+
+      <Text fontSize="2xl" p="3" color="darkPrimary">
         Joined Boards
       </Text>
-    </>
+
+      {loadingJoinedBoards ? (
+        <Loading />
+      ) : (
+        <SimpleGrid
+          p="3"
+          w="full"
+          templateColumns="repeat(auto-fill, minmax(225px, 1fr))"
+          gap="6"
+        >
+          {joinedBoards?.length ? (
+            joinedBoards?.map((board: Board) => (
+              <BoardCard
+                type="joinedBoard"
+                key={board.boardId!}
+                boardId={board.boardId!}
+                boardName={board.boardName!}
+                host={board?.hostID?.name}
+              />
+            ))
+          ) : (
+            <GridItem as={Text} fontSize="lg" colSpan={2}>
+              You have not joined any boards yet.
+            </GridItem>
+          )}
+        </SimpleGrid>
+      )}
+
+      {isOpen && <CreateModal isOpen={isOpen} onClose={onClose} />}
+    </VStack>
   );
 };
 

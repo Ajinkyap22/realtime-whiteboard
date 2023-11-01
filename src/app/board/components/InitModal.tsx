@@ -34,7 +34,7 @@ const InitModal = () => {
       isCentered
       isOpen={isOpen}
       onClose={onClose}
-      // closeOnOverlayClick={false} TODO: uncomment this when handleCreateGuestUser is implemented
+      closeOnOverlayClick={false}
     >
       <ModalOverlay
         bg="none"

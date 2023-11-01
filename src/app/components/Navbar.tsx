@@ -25,7 +25,7 @@ type Props = {
 };
 
 const Navbar = ({ members, handleLeaveBoard }: Props) => {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const pathname = usePathname();
 
   const guestUser = useBoundStore((state) => state.guestUser);
@@ -35,10 +35,6 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
   const setClientId = useBoundStore((state) => state.setClientId);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const handleSignIn = () => {
-    signIn("google");
-  };
 
   const handleSignOut = () => {
     signOut();
@@ -60,8 +56,15 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
   if (pathname === "/") return null;
 
   return (
-    <HStack justifyContent="flex-end" w="full" p="4" zIndex={1}>
-      <HStack bg="white" shadow="all-around" p="4" borderRadius="md" gap="4">
+    <HStack justifyContent="flex-end" w="full" p="4">
+      <HStack
+        bg="white"
+        shadow="all-around"
+        p="4"
+        borderRadius="md"
+        gap="4"
+        zIndex={1}
+      >
         <AvatarStack members={members ?? []} />
 
         {handleLeaveBoard && (
@@ -76,18 +79,12 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
           </>
         )}
 
-        {status === "authenticated" ? (
+        {status === "authenticated" && (
           <HStack alignItems="center" gap="4">
             <Button onClick={handleSignOut} px="3" py="5" h="0">
               <Image src="/icons/logout.svg" alt="Logout" w="4" h="4" />
             </Button>
           </HStack>
-        ) : (
-          <Button onClick={handleSignIn}>
-            <Text fontWeight="normal" fontSize="sm">
-              Sign in
-            </Text>
-          </Button>
         )}
       </HStack>
 

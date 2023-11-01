@@ -5,28 +5,21 @@ import React, { useEffect, useState } from "react";
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import uniqid from "uniqid";
-import {
-  Avatar,
-  AvatarGroup,
-  Box,
-  HStack,
-  VStack,
-  useToast,
-} from "@chakra-ui/react";
+import { Box, VStack, useToast } from "@chakra-ui/react";
 import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
+import { useMutation } from "react-query";
 
 import InitModal from "@/app/board/components/InitModal";
 import Cursor from "@/app/board/components/Cursor";
 import Whiteboard from "@/app/board/components/Whiteboard";
 import Navbar from "@/app/components/Navbar";
 
-import { subscribeTheUser, unsubscribeTheUser } from "@/app/config/ably";
+import { subscribeTheUser } from "@/app/config/ably";
 
 import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
-import { useRouter } from "next/navigation";
-import { useMutation } from "react-query";
+
 import { addParticipant } from "@/services/boardService";
 
 type Props = {
@@ -40,8 +33,6 @@ const Board = ({ params }: Props) => {
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
 
   const { data: session, status } = useSession();
-
-  const router = useRouter();
 
   const guestUser = useBoundStore((state) => state.guestUser);
   const clientId = useBoundStore((state) => state.clientId);
@@ -134,10 +125,6 @@ const Board = ({ params }: Props) => {
     });
   };
 
-  const handleUnsubscribe = async () => {
-    await unsubscribeTheUser(clientId!, params.id);
-  };
-
   const handleAblyConnection = async () => {
     if (!clientId) return;
 
@@ -182,7 +169,7 @@ const Board = ({ params }: Props) => {
       handleSaveBoard();
     }
     // TODO: add dependency of board data
-  }, []);
+  }, []); 
 
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();

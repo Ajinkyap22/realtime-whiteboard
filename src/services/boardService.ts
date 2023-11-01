@@ -34,6 +34,12 @@ export const getMyBoards = async (user: string) => {
   return response.data;
 };
 
+export const getJoinedBoards = async (user: string) => {
+  const response = await axiosInstance.get("/get-participated-board/" + user);
+
+  return response.data;
+};
+
 export const deleteBoard = async (boardId: string, user: string) => {
   const response = await axiosInstance.post("/delete-board", {
     boardId: boardId,
@@ -41,4 +47,11 @@ export const deleteBoard = async (boardId: string, user: string) => {
   });
 
   return response.data;
+};
+
+export const doesUserHaveBoards = async (user: string) => {
+  const response = await axiosInstance.get("/user-has-boards/" + user);
+
+
+  return response.data.hasBoards;
 };

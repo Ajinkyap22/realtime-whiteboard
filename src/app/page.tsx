@@ -1,20 +1,31 @@
 "use client";
+
+import React, { useEffect } from "react";
+
+import { useSession } from "next-auth/react";
+import { usePathname, useRouter } from "next/navigation";
+
 import { VStack, Text, Image, HStack, Box } from "@chakra-ui/react";
 
 import OnboardingCard from "@/app/components/OnboardingCard";
+
+import uniqid from "uniqid";
 import { useMutation } from "react-query";
 import { useBoundStore } from "@/zustand/store";
-import { createBoard } from "@/services/boardService";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import uniqid from "uniqid";
+
+import { createBoard, doesUserHaveBoards } from "@/services/boardService";
 
 export default function Home() {
   const router = useRouter();
+  const pathname = usePathname();
+
   const setBoard = useBoundStore((state) => state.setBoard);
 
   const { status, data: session } = useSession();
+
+  const doesUserHaveBoardsMutation = useMutation(({ user }: { user: string }) =>
+    doesUserHaveBoards(user)
+  );
 
   const createBoardMutation = useMutation(
     ({ id, name, user }: { id: string; name: string; user: string }) =>
@@ -22,6 +33,19 @@ export default function Home() {
   );
 
   const handleCreateBoard = async () => {
+    const isAuthenticated = status === "authenticated";
+
+    const userHasBoards =
+      isAuthenticated &&
+      (await doesUserHaveBoardsMutation.mutateAsync({
+        user: session?.user?.email as string,
+      }));
+
+    if (userHasBoards) {
+      router.push("/boards");
+      return;
+    }
+
     const id = uniqid();
 
     const board = {
@@ -31,7 +55,7 @@ export default function Home() {
 
     setBoard(board);
 
-    if (status === "authenticated") {
+    if (isAuthenticated) {
       createBoardMutation.mutate({
         id,
         name: board.name,
@@ -49,6 +73,17 @@ export default function Home() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
+
+  useEffect(() => {
+    if (pathname === "/boards") {
+      router.replace("/");
+    }
+  }, [pathname, router]);
+
+  useEffect(() => {
+    // prefetch /boards page
+    router.prefetch("/boards");
+  }, [router]);
 
   return (
     <VStack
