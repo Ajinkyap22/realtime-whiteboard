@@ -6,17 +6,10 @@ import { ActiveTool } from "@/types/ActiveTool";
 
 type Props = {
   activeTool: ActiveTool;
-  selection: boolean;
-  setSelection: (Selection: boolean) => void;
   switchActiveTool: (tool: ActiveTool) => void;
 };
 
-const Whiteboard = ({
-  activeTool,
-  setSelection,
-  selection,
-  switchActiveTool,
-}: Props) => {
+const Whiteboard = ({ activeTool, switchActiveTool }: Props) => {
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
 
@@ -24,7 +17,7 @@ const Whiteboard = ({
 
   useEffect(() => {
     const newCanvas = new fabric.Canvas(canvasRef.current, {
-      selection: false,
+      backgroundColor: "rgba(0, 0, 0, 0)", // Set canvas background color to transparent
     });
     setCanvas(newCanvas);
     const imageURL =
@@ -55,12 +48,13 @@ const Whiteboard = ({
       // Clean up event listeners on component unmount
       window.removeEventListener("resize", resizeCanvas);
     };
-  }, [selection]);
+  }, []);
 
   useEffect(() => {
     if (!canvas) return;
 
     canvas.isDrawingMode = false;
+    canvas.off();
 
     // Set the active tool
     switch (activeTool) {
@@ -69,6 +63,9 @@ const Whiteboard = ({
         break;
       case ActiveTool.TEXT:
         handleAddText();
+        break;
+      case ActiveTool.ERASER:
+        handleErase();
         break;
     }
 
@@ -98,7 +95,6 @@ const Whiteboard = ({
   // event handler for text
   function setTextCoords(e: any) {
     if (!canvas) return;
-    console.log("here");
     const pointer = canvas.getPointer(e, false);
     const posX = pointer.x;
     const posY = pointer.y;
@@ -144,7 +140,9 @@ const Whiteboard = ({
     };
 
     document.body.appendChild(input);
-    input.focus();
+    setTimeout(() => {
+      input.focus();
+    }, 100);
   }
 
   function handledDraw() {
@@ -179,6 +177,16 @@ const Whiteboard = ({
 
     // Update the canvas
     canvas.renderAll();
+  }
+
+  function handleErase() {
+    if (!canvas) return;
+    canvas.isDrawingMode = true;
+    canvas.freeDrawingBrush.color = "white"; // Set brush color
+    canvas.freeDrawingBrush.width = 10; // Set brush width
+
+    //Below code is not working
+    // canvas.freeDrawingBrush.globalCompositeOperation = "source-over";
   }
 
   return (

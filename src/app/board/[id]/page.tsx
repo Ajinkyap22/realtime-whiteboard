@@ -239,15 +239,10 @@ const Board = ({ params }: Props) => {
             <>
               <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
 
-              <Toolbox
-                switchActiveTool={switchActiveTool}
-                setSelection={setSelection}
-              />
+              <Toolbox switchActiveTool={switchActiveTool} />
 
               <Whiteboard
                 activeTool={activeTool}
-                selection={selection}
-                setSelection={setSelection}
                 switchActiveTool={switchActiveTool}
               />
 

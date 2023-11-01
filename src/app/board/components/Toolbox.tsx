@@ -6,10 +6,9 @@ import { VStack, Image, Button } from "@chakra-ui/react";
 
 type Props = {
   switchActiveTool: (tool: ActiveTool) => void;
-  setSelection: (selection: boolean) => void;
 };
 
-const Toolbox = ({ switchActiveTool, setSelection }: Props) => {
+const Toolbox = ({ switchActiveTool }: Props) => {
   return (
     <VStack h="full" justifyContent="center">
       <VStack
@@ -19,17 +18,6 @@ const Toolbox = ({ switchActiveTool, setSelection }: Props) => {
         borderRadius="md"
         zIndex={1}
       >
-        <Button
-          onClick={() => setSelection(true)}
-          py="5"
-          px="4"
-          bg="transparent"
-          _hover={{
-            bg: "gray.50",
-          }}
-        >
-          <Image src="/icons/select.svg" alt="select" w="6" h="6" />
-        </Button>
         <Button
           onClick={() => switchActiveTool(ActiveTool.BRUSH)}
           py="5"
@@ -52,6 +40,17 @@ const Toolbox = ({ switchActiveTool, setSelection }: Props) => {
           }}
         >
           <Image src="/icons/text-icon.svg" alt="text-icon" w="6" h="6" />
+        </Button>
+        <Button
+          onClick={() => switchActiveTool(ActiveTool.ERASER)}
+          py="5"
+          px="4"
+          bg="transparent"
+          _hover={{
+            bg: "gray.50",
+          }}
+        >
+          <Image src="/icons/eraser.svg" alt="eraser" w="6" h="6" />
         </Button>
       </VStack>
     </VStack>
