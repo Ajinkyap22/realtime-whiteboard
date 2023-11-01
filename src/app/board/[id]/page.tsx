@@ -25,6 +25,7 @@ import Loading from "@/app/loading";
 import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
 import Toolbox from "@/app/board/components/Toolbox";
 import { ActiveTool } from "@/types/ActiveTool";
+import { Shapes } from "@/types/Shapes";
 
 type Props = {
   params: {
@@ -36,6 +37,7 @@ const Board = ({ params }: Props) => {
   const [members, setMembers] = useState<SpaceMember[]>([]);
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
   const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
+  const [activeShape, setActiveShape] = useState<Shapes>(Shapes.RECTANGLE);
 
   const { data: session, status } = useSession();
 
@@ -184,6 +186,10 @@ const Board = ({ params }: Props) => {
     setActiveTool(tool);
   };
 
+  const handleSwitchShape = (shape: Shapes) => {
+    setActiveShape(shape);
+  };
+
   useEffect(() => {
     if (status === "authenticated" && boardIdTracker?.hostType === "user") {
       handleSaveBoard();
@@ -238,9 +244,14 @@ const Board = ({ params }: Props) => {
             <>
               <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
 
-              <Toolbox switchActiveTool={switchActiveTool} />
+              <Toolbox
+                activeTool={activeTool}
+                activeShape={activeShape}
+                switchActiveTool={switchActiveTool}
+                handleSwitchShape={handleSwitchShape}
+              />
 
-              <Whiteboard activeTool={activeTool} />
+              <Whiteboard activeTool={activeTool} activeShape={activeShape} />
 
               {/* Cursor */}
               {membersLocation && membersLocation.length > 0 ? (

@@ -1,14 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+"use client";
+
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 
 import ZoomPanel from "@/app/board/components/ZoomPanel";
 import { ActiveTool } from "@/types/ActiveTool";
+import { Shapes } from "@/types/Shapes";
 
 type Props = {
   activeTool: ActiveTool;
+  activeShape: Shapes;
 };
 
-const Whiteboard = ({ activeTool }: Props) => {
+const Whiteboard = ({ activeTool, activeShape }: Props) => {
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
 
@@ -61,9 +65,12 @@ const Whiteboard = ({ activeTool }: Props) => {
       case ActiveTool.TEXT:
         handleAddText();
         break;
+      case ActiveTool.SHAPE:
+        handleAddShape();
+        break;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTool]);
+  }, [activeTool, canvas]);
 
   // add event listener to canvas
   function handleAddText() {}
@@ -85,6 +92,48 @@ const Whiteboard = ({ activeTool }: Props) => {
       blur: 5,
     });
   }
+
+  const handleAddShape = useCallback(() => {
+    if (!canvas) return;
+
+    switch (activeShape) {
+      case Shapes.RECTANGLE:
+        const rect = new fabric.Rect({
+          width: 100,
+          height: 100,
+          fill: "transparent",
+          stroke: "black",
+          strokeWidth: 2,
+          strokeUniform: true,
+        });
+
+        canvas.add(rect);
+        break;
+      case Shapes.CIRCLE:
+        const circle = new fabric.Circle({
+          radius: 50,
+          fill: "transparent",
+          stroke: "black",
+          strokeWidth: 2,
+          strokeUniform: true,
+        });
+
+        canvas.add(circle);
+        break;
+      case Shapes.TRIANGLE:
+        const triangle = new fabric.Triangle({
+          width: 100,
+          height: 100,
+          fill: "transparent",
+          stroke: "black",
+          strokeWidth: 2,
+          strokeUniform: true,
+        });
+
+        canvas.add(triangle);
+        break;
+    }
+  }, [activeShape, canvas]);
 
   function handleZoom(type: "in" | "out") {
     if (!canvas) return;
