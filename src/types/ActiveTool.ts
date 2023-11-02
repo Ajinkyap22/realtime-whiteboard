@@ -1,6 +1,6 @@
 export enum ActiveTool {
   BRUSH = "Brush",
   TEXT = "Text",
-  ERASER = "Eraser",
+  // ERASER = "Eraser",
   SHAPE = "Shape",
 }

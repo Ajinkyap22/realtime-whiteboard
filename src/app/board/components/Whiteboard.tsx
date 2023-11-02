@@ -1,28 +1,44 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 
 import ZoomPanel from "@/app/board/components/ZoomPanel";
+
 import { ActiveTool } from "@/types/ActiveTool";
 import { Shapes } from "@/types/Shapes";
 import { useBoundStore } from "@/zustand/store";
 import { Board } from "@/types/Board";
 import { getSpace } from "@/app/config/ably";
+import { useSession } from "next-auth/react";
 
 type Props = {
   activeTool: ActiveTool;
   activeShape: Shapes;
+  boardIdTracker: any;
   switchActiveTool: (tool: ActiveTool) => void;
+  handleSaveBoard: () => void;
+  handlePublishEvent: () => void;
 };
 
-const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
+const Whiteboard = ({
+  activeTool,
+  activeShape,
+  boardIdTracker,
+  switchActiveTool,
+  handlePublishEvent,
+  handleSaveBoard,
+}: Props) => {
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+  const [isCanvasSet, setIsCanvasSet] = useState<boolean>(false);
+  let isCanvasUpdatedByEvent = useRef(false);
 
   const setBoard = useBoundStore((state) => state.setBoard);
   const board = useBoundStore((state) => state.board);
   const clientId = useBoundStore((state) => state.clientId);
+  const guestUser = useBoundStore((state) => state.guestUser);
+  const { status } = useSession();
 
   const canvasRef = useRef(null);
 
@@ -30,7 +46,10 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     const newCanvas = new fabric.Canvas(canvasRef.current, {
       backgroundColor: "rgba(0, 0, 0, 0)", // Set canvas background color to transparent
     });
+
     setCanvas(newCanvas);
+    setIsCanvasSet(true);
+
     const imageURL =
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23d8d8d8' fill-opacity='0.3'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
 
@@ -64,8 +83,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
   useEffect(() => {
     if (!canvas) return;
 
-    canvas.isDrawingMode = false;
-    // canvas.off();
+    cleanUp();
 
     // Set the active tool
     switch (activeTool) {
@@ -78,57 +96,98 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
       case ActiveTool.SHAPE:
         handleAddShape();
         break;
-      case ActiveTool.ERASER:
-        handleErase();
-        break;
+      // case ActiveTool.ERASER:
+      //   handleErase();
+      //   break;
     }
-    canvas.on("object:added", (e) => {
-      console.log("object added");
 
-      const boardData = JSON.stringify(e.target?.toJSON());
+    canvas.on("after:render", (e) => {
+      if (isCanvasUpdatedByEvent.current) {
+        isCanvasUpdatedByEvent.current = false;
+        return;
+      }
 
-      const newBoard: Board = {
-        ...board,
-        boardData: boardData,
-      };
+      try {
+        const boardData = JSON.stringify(canvas.toJSON());
 
-      setBoard(newBoard);
+        const newBoard: Board = {
+          ...board,
+          boardData: boardData,
+        };
+
+        setBoard(newBoard);
+
+        if (status === "authenticated" && boardIdTracker?.hostType === "user") {
+          handleSaveBoard();
+        } else if (status === "unauthenticated" && !!guestUser) {
+          handlePublishEvent();
+        }
+      } catch (e) {
+        console.log(e);
+      }
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool, canvas, activeShape]);
 
-  // event Listener
   useEffect(() => {
-    listenCanvaEvent();
-  }, []);
+    if (!isCanvasSet) return;
 
-  const listenCanvaEvent = async () => {
+    listenCanvasEvent();
+  }, [isCanvasSet]);
+
+  const listenCanvasEvent = async () => {
     if (!clientId) return;
 
     const space = await getSpace(clientId, board?.boardId as string);
 
-    space.channel.subscribe("canvaEvent", (message) => {
-      console.log("canvaEvent", message.data);
-      handleCanvaEvent(message.data);
+    space.channel.subscribe("canvasEvent", (message) => {
+      handleCanvasEvent(message.data);
     });
   };
 
-  const handleCanvaEvent = (data: any) => {
+  const handleCanvasEvent = (data: any) => {
     try {
       if (!canvas) return;
 
-      const jsonData = JSON.parse(data);
+      if (data.clientId.toString() == clientId?.toString()) return;
 
-      const path = new fabric.Path(jsonData);
+      const canvasData = data.canvasData;
 
-      canvas.add(jsonData);
+      isCanvasUpdatedByEvent.current = true;
 
-      canvas.renderAll();
+      canvas.loadFromJSON(canvasData, () => {
+        canvas.renderAll.bind(canvas);
+      });
     } catch (e) {
       console.log(e);
     }
   };
+
+  const cleanUp = () => {
+    if (!canvas) return;
+
+    canvas.isDrawingMode = false;
+
+    // disable selection for eraser if selection mode is on
+    // canvas.getObjects().forEach((obj) => {
+    //   if (obj.type === "path" && obj.stroke === "white" && obj.selectable) {
+    //     obj.selectable = false;
+    //   //   // obj.globalCompositeOperation = "destination-over";
+
+    //   //   // canvas.getObjects().forEach((o) => {
+    //   //   //   if (o.intersectsWithObject(obj)) {
+    //   //   //     o.selectable = false;
+    //   //   //     o.stroke = "transparent";
+    //   //   //   }
+    //   //   // });
+    //   // }
+    // });
+
+    canvas.renderAll();
+  };
+
+  // --------TEXT---------
 
   // add event listener to canvas
   function handleAddText() {
@@ -163,6 +222,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
 
   function renderInputBox(posX: number, posY: number) {
     if (!canvas) return;
+
     const input = document.createElement("input");
     input.type = "text";
     input.style.position = "absolute";
@@ -180,21 +240,20 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     input.style.paddingLeft = "5px";
     input.style.margin = "0px";
     input.style.overflow = "hidden";
+
+    let removed = false;
+
     input.onkeydown = function (e) {
       if (e.key === "Enter") {
-        const text = new fabric.IText(input.value, {
-          left: posX,
-          top: posY,
-          fontFamily: "arial",
-          fill: "#000",
-          fontSize: 20,
-        });
-
-        canvas?.add(text);
-        canvas?.off("mouse:down", setTextCoords);
-        document.body.removeChild(input);
-        switchActiveTool(ActiveTool.BRUSH);
+        removed = true;
+        placeText(input, posX, posY);
       }
+    };
+
+    input.onblur = function () {
+      if (removed) return;
+
+      placeText(input, posX, posY);
     };
 
     document.body.appendChild(input);
@@ -203,8 +262,30 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     }, 100);
   }
 
+  const placeText = (input: HTMLInputElement, x: number, y: number) => {
+    if (!canvas) return;
+
+    if (input.value) {
+      const text = new fabric.IText(input.value, {
+        left: x,
+        top: y,
+        fontFamily: "arial",
+        fill: "#000",
+        fontSize: 20,
+      });
+
+      canvas.add(text);
+    }
+
+    document.body.removeChild(input);
+    canvas.off("mouse:down", setTextCoords);
+    switchActiveTool(ActiveTool.BRUSH);
+  };
+
+  // --------DRAWING---------
   function handledDraw() {
     if (!canvas) return;
+
     canvas.isDrawingMode = true;
     canvas.freeDrawingBrush.color = "black"; // Set brush color
     canvas.freeDrawingBrush.width = 2; // Set brush width
@@ -214,6 +295,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     });
   }
 
+  // --------ZOOM---------
   function handleZoom(type: "in" | "out") {
     if (!canvas) return;
 
@@ -238,7 +320,6 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
   }
 
   // --------SHAPES---------
-
   const handleAddShape = () => {
     if (!canvas) return;
 
@@ -424,15 +505,18 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     canvas.renderAll();
   };
 
-  function handleErase() {
-    if (!canvas) return;
-    canvas.isDrawingMode = true;
-    canvas.freeDrawingBrush.color = "white"; // Set brush color
-    canvas.freeDrawingBrush.width = 10; // Set brush width
+  // --------ERASER---------
+  // function handleErase() {
+  //   if (!canvas) return;
 
-    //Below code is not working
-    // canvas.freeDrawingBrush.globalCompositeOperation = "source-over";
-  }
+  //   canvas.isDrawingMode = true;
+  //   canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+  //   canvas.freeDrawingBrush.color = "white"; // Set brush color
+  //   canvas.freeDrawingBrush.width = 30; // Set brush width
+
+  //   // below code is not working
+  //   // canvas.freeDrawingBrush.globalCompositeOperation = "source-over";
+  // }
 
   return (
     <>

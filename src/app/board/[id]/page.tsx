@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useBoundStore } from "@/zustand/store";
 import { useSession } from "next-auth/react";
 import uniqid from "uniqid";
-import { Box, Button, VStack, useToast } from "@chakra-ui/react";
+import { Box, VStack, useToast } from "@chakra-ui/react";
 import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 import { useMutation, useQuery } from "react-query";
 
@@ -13,12 +13,17 @@ import InitModal from "@/app/board/components/InitModal";
 import Cursor from "@/app/board/components/Cursor";
 import Whiteboard from "@/app/board/components/Whiteboard";
 import Navbar from "@/app/components/Navbar";
+import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
+import Toolbox from "@/app/board/components/Toolbox";
+import Loading from "@/app/loading";
 
 import { getSpace, subscribeTheUser } from "@/app/config/ably";
 
 import type { UserEvent } from "@/app/types/UserEvent";
 import { AblySpaceEventIdentifiers } from "@/app/types/AblySpaceEventIdentifiers";
 import type { MembersLocation } from "@/app/types/MembersLocation";
+import { Shapes } from "@/types/Shapes";
+import { ActiveTool } from "@/types/ActiveTool";
 
 import {
   addParticipant,
@@ -26,11 +31,6 @@ import {
   getBoardData,
   updateBoard,
 } from "@/services/boardService";
-import Loading from "@/app/loading";
-import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
-import Toolbox from "@/app/board/components/Toolbox";
-import { ActiveTool } from "@/types/ActiveTool";
-import { Shapes } from "@/types/Shapes";
 import { Board } from "@/types/Board";
 
 type Props = {
@@ -44,7 +44,6 @@ const Board = ({ params }: Props) => {
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
   const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
   const [activeShape, setActiveShape] = useState<Shapes>(Shapes.RECTANGLE);
-  const [selection, setSelection] = useState<boolean>(false);
   const [isClientSubscribed, setIsClientSubscribed] = useState<boolean>(false);
 
   const { data: session, status } = useSession();
@@ -224,8 +223,11 @@ const Board = ({ params }: Props) => {
 
   const handlePublishEvent = async () => {
     const space = await getSpace(clientId!, params.id);
-    // TODO: publish the board data
-    await space.channel.publish("canvaEvent", board?.boardData);
+
+    await space.channel.publish("canvasEvent", {
+      canvasData: board?.boardData,
+      clientId: clientId,
+    });
   };
 
   const handleLeaveBoard = async () => {
@@ -242,6 +244,7 @@ const Board = ({ params }: Props) => {
 
   const handleSaveBoard = () => {
     handlePublishEvent();
+
     updateBoardMutation.mutate({
       boardId: params.id,
       boardName: board?.boardName as string,
@@ -256,13 +259,6 @@ const Board = ({ params }: Props) => {
   const handleSwitchShape = (shape: Shapes) => {
     setActiveShape(shape);
   };
-
-  useEffect(() => {
-    if (status === "authenticated" && boardIdTracker?.hostType === "user") {
-      handleSaveBoard();
-    }
-    // TODO: add dependency of board data
-  }, [boardIdTracker, status, board]);
 
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();
@@ -294,6 +290,13 @@ const Board = ({ params }: Props) => {
     }
   }, [boardIdTracker, status]);
 
+  useEffect(() => {
+    setBoard({
+      ...board,
+      boardId: params.id,
+    });
+  }, [params.id]);
+
   return (
     <VStack h="full" w="full">
       {validatingBoard ? (
@@ -322,6 +325,9 @@ const Board = ({ params }: Props) => {
                 activeTool={activeTool}
                 activeShape={activeShape}
                 switchActiveTool={switchActiveTool}
+                handleSaveBoard={handleSaveBoard}
+                handlePublishEvent={handlePublishEvent}
+                boardIdTracker={boardIdTracker}
               />
 
               {/* Cursor */}
