@@ -58,7 +58,6 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     if (!canvas) return;
 
     canvas.isDrawingMode = false;
-    canvas.off();
 
     // Set the active tool
     switch (activeTool) {
@@ -112,6 +111,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
 
   function renderInputBox(posX: number, posY: number) {
     if (!canvas) return;
+
     const input = document.createElement("input");
     input.type = "text";
     input.style.position = "absolute";
@@ -129,21 +129,20 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     input.style.paddingLeft = "5px";
     input.style.margin = "0px";
     input.style.overflow = "hidden";
+
+    let removed = false;
+
     input.onkeydown = function (e) {
       if (e.key === "Enter") {
-        const text = new fabric.IText(input.value, {
-          left: posX,
-          top: posY,
-          fontFamily: "arial",
-          fill: "#000",
-          fontSize: 20,
-        });
-
-        canvas?.add(text);
-        canvas?.off("mouse:down", setTextCoords);
-        document.body.removeChild(input);
-        switchActiveTool(ActiveTool.BRUSH);
+        removed = true;
+        placeText(input, posX, posY);
       }
+    };
+
+    input.onblur = function () {
+      if (removed) return;
+
+      placeText(input, posX, posY);
     };
 
     document.body.appendChild(input);
@@ -151,6 +150,26 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
       input.focus();
     }, 100);
   }
+
+  const placeText = (input: HTMLInputElement, x: number, y: number) => {
+    if (!canvas) return;
+
+    if (input.value) {
+      const text = new fabric.IText(input.value, {
+        left: x,
+        top: y,
+        fontFamily: "arial",
+        fill: "#000",
+        fontSize: 20,
+      });
+
+      canvas.add(text);
+    }
+
+    document.body.removeChild(input);
+    canvas.off("mouse:down", setTextCoords);
+    switchActiveTool(ActiveTool.BRUSH);
+  };
 
   function handledDraw() {
     if (!canvas) return;
