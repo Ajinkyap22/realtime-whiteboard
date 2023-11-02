@@ -3,5 +3,4 @@ export enum Shapes {
   CIRCLE = "circle",
   TRIANGLE = "triangle",
   LINE = "line",
-  POLYGON = "polygon",
 }

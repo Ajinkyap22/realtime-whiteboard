@@ -70,7 +70,7 @@ const Whiteboard = ({ activeTool, activeShape }: Props) => {
         break;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTool, canvas]);
+  }, [activeTool, canvas, activeShape]);
 
   // add event listener to canvas
   function handleAddText() {}
@@ -92,48 +92,6 @@ const Whiteboard = ({ activeTool, activeShape }: Props) => {
       blur: 5,
     });
   }
-
-  const handleAddShape = useCallback(() => {
-    if (!canvas) return;
-
-    switch (activeShape) {
-      case Shapes.RECTANGLE:
-        const rect = new fabric.Rect({
-          width: 100,
-          height: 100,
-          fill: "transparent",
-          stroke: "black",
-          strokeWidth: 2,
-          strokeUniform: true,
-        });
-
-        canvas.add(rect);
-        break;
-      case Shapes.CIRCLE:
-        const circle = new fabric.Circle({
-          radius: 50,
-          fill: "transparent",
-          stroke: "black",
-          strokeWidth: 2,
-          strokeUniform: true,
-        });
-
-        canvas.add(circle);
-        break;
-      case Shapes.TRIANGLE:
-        const triangle = new fabric.Triangle({
-          width: 100,
-          height: 100,
-          fill: "transparent",
-          stroke: "black",
-          strokeWidth: 2,
-          strokeUniform: true,
-        });
-
-        canvas.add(triangle);
-        break;
-    }
-  }, [activeShape, canvas]);
 
   function handleZoom(type: "in" | "out") {
     if (!canvas) return;
@@ -157,6 +115,193 @@ const Whiteboard = ({ activeTool, activeShape }: Props) => {
     // Update the canvas
     canvas.renderAll();
   }
+
+  // --------SHAPES---------
+
+  const handleAddShape = () => {
+    if (!canvas) return;
+
+    canvas.discardActiveObject();
+
+    // add event listeners to canvas
+    canvas.on("mouse:down", handleMouseDownForShape);
+
+    canvas.on("mouse:move", handleMouseMoveForShape);
+
+    canvas.on("mouse:up", handleMouseUpForShape);
+  };
+
+  // mouse down
+  const handleMouseDownForShape = (e: fabric.IEvent<MouseEvent>) => {
+    if (!canvas) return;
+
+    const pointer = canvas.getPointer(e.e, false);
+
+    const posX = pointer.x;
+    const posY = pointer.y;
+
+    renderShape(activeShape, posX, posY);
+  };
+
+  // mouse move
+  const handleMouseMoveForShape = (e: fabric.IEvent<MouseEvent>) => {
+    if (!canvas) return;
+
+    const pointer = canvas.getPointer(e.e, false);
+
+    const posX = pointer.x;
+    const posY = pointer.y;
+
+    const activeObject = canvas.getActiveObject();
+
+    if (activeObject) {
+      drawShape(activeObject, posX, posY);
+    }
+  };
+
+  // mouse up
+  const handleMouseUpForShape = (e: fabric.IEvent<MouseEvent>) => {
+    if (!canvas) return;
+
+    const activeObject = canvas.getActiveObject();
+
+    if (activeObject) {
+      activeObject.setCoords();
+    }
+
+    canvas.off("mouse:down");
+    canvas.off("mouse:move");
+    canvas.off("mouse:up");
+  };
+
+  const renderShape = (shape: Shapes, x: number, y: number) => {
+    if (!canvas) return;
+
+    let shapeObj: fabric.Object;
+
+    switch (shape) {
+      case Shapes.RECTANGLE:
+        shapeObj = new fabric.Rect({
+          left: x,
+          top: y,
+          fill: "transparent",
+          stroke: "black",
+          strokeWidth: 2,
+          width: 0,
+          height: 0,
+        });
+        break;
+      case Shapes.CIRCLE:
+        shapeObj = new fabric.Circle({
+          left: x,
+          top: y,
+          fill: "transparent",
+          stroke: "black",
+          strokeWidth: 2,
+          radius: 0,
+        });
+        break;
+      case Shapes.TRIANGLE:
+        shapeObj = new fabric.Triangle({
+          left: x,
+          top: y,
+          fill: "transparent",
+          stroke: "black",
+          strokeWidth: 2,
+          width: 0,
+          height: 0,
+        });
+        break;
+      case Shapes.LINE:
+        shapeObj = new fabric.Line([x, y, x, y], {
+          fill: "black",
+          stroke: "black",
+          strokeWidth: 2,
+        });
+        break;
+      default:
+        shapeObj = new fabric.Rect({
+          left: x,
+          top: y,
+          fill: "transparent",
+          stroke: "black",
+          strokeWidth: 2,
+          width: 0,
+          height: 0,
+        });
+        break;
+    }
+
+    canvas.add(shapeObj);
+    canvas.renderAll();
+    canvas.setActiveObject(shapeObj);
+  };
+
+  const drawShape = (activeObject: fabric.Object, x: number, y: number) => {
+    if (!canvas) return;
+
+    switch (activeObject.type) {
+      case "rect":
+        const rect = activeObject as fabric.Rect;
+        const left = rect.left!;
+        const top = rect.top!;
+
+        if (x < left) {
+          rect.set({ left: x });
+        }
+
+        if (y < top) {
+          rect.set({ top: y });
+        }
+
+        rect.set({ width: Math.abs(x - left) });
+        rect.set({ height: Math.abs(y - top) });
+        break;
+      case "circle":
+        const circle = activeObject as fabric.Circle;
+        const leftCircle = circle.left!;
+        const topCircle = circle.top!;
+
+        const radius = Math.abs(x - leftCircle);
+
+        circle.set({ radius });
+
+        if (x < leftCircle) {
+          circle.set({ left: x });
+        }
+
+        if (y < topCircle) {
+          circle.set({ top: y });
+        }
+        break;
+      case "triangle":
+        const triangle = activeObject as fabric.Triangle;
+
+        const leftTriangle = triangle.left!;
+        const topTriangle = triangle.top!;
+
+        if (x < leftTriangle) {
+          triangle.set({ left: x });
+        }
+
+        if (y < topTriangle) {
+          triangle.set({ top: y });
+        }
+
+        triangle.set({ width: Math.abs(x - leftTriangle) });
+        triangle.set({ height: Math.abs(y - topTriangle) });
+        break;
+      case "line":
+        const line = activeObject as fabric.Line;
+
+        line.set({ x2: x, y2: y });
+        break;
+      default:
+        break;
+    }
+
+    canvas.renderAll();
+  };
 
   return (
     <>
