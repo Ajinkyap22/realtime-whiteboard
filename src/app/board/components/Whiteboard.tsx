@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { fabric } from "fabric";
 
 import ZoomPanel from "@/app/board/components/ZoomPanel";
+
 import { ActiveTool } from "@/types/ActiveTool";
 import { Shapes } from "@/types/Shapes";
 
@@ -24,6 +25,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
       backgroundColor: "rgba(0, 0, 0, 0)", // Set canvas background color to transparent
     });
     setCanvas(newCanvas);
+
     const imageURL =
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23d8d8d8' fill-opacity='0.3'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
 
@@ -57,7 +59,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
   useEffect(() => {
     if (!canvas) return;
 
-    canvas.isDrawingMode = false;
+    cleanUp();
 
     // Set the active tool
     switch (activeTool) {
@@ -70,13 +72,38 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
       case ActiveTool.SHAPE:
         handleAddShape();
         break;
-      case ActiveTool.ERASER:
-        handleErase();
-        break;
+      // case ActiveTool.ERASER:
+      //   handleErase();
+      //   break;
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool, canvas, activeShape]);
+
+  const cleanUp = () => {
+    if (!canvas) return;
+
+    canvas.isDrawingMode = false;
+
+    // disable selection for eraser if selection mode is on
+    canvas.getObjects().forEach((obj) => {
+      if (obj.type === "path" && obj.stroke === "white" && obj.selectable) {
+        obj.selectable = false;
+        // obj.globalCompositeOperation = "destination-over";
+
+        // canvas.getObjects().forEach((o) => {
+        //   if (o.intersectsWithObject(obj)) {
+        //     o.selectable = false;
+        //     o.stroke = "transparent";
+        //   }
+        // });
+      }
+    });
+
+    canvas.renderAll();
+  };
+
+  // --------TEXT---------
 
   // add event listener to canvas
   function handleAddText() {
@@ -171,6 +198,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     switchActiveTool(ActiveTool.BRUSH);
   };
 
+  // --------DRAWING---------
   function handledDraw() {
     if (!canvas) return;
     canvas.isDrawingMode = true;
@@ -182,6 +210,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     });
   }
 
+  // --------ZOOM---------
   function handleZoom(type: "in" | "out") {
     if (!canvas) return;
 
@@ -206,7 +235,6 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
   }
 
   // --------SHAPES---------
-
   const handleAddShape = () => {
     if (!canvas) return;
 
@@ -392,15 +420,18 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     canvas.renderAll();
   };
 
-  function handleErase() {
-    if (!canvas) return;
-    canvas.isDrawingMode = true;
-    canvas.freeDrawingBrush.color = "white"; // Set brush color
-    canvas.freeDrawingBrush.width = 10; // Set brush width
+  // --------ERASER---------
+  // function handleErase() {
+  //   if (!canvas) return;
 
-    //Below code is not working
-    // canvas.freeDrawingBrush.globalCompositeOperation = "source-over";
-  }
+  //   canvas.isDrawingMode = true;
+  //   canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+  //   canvas.freeDrawingBrush.color = "white"; // Set brush color
+  //   canvas.freeDrawingBrush.width = 30; // Set brush width
+
+  //   // below code is not working
+  //   // canvas.freeDrawingBrush.globalCompositeOperation = "source-over";
+  // }
 
   return (
     <>
