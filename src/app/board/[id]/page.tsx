@@ -30,7 +30,6 @@ import {
   checkValidBoardId,
   updateBoard,
 } from "@/services/boardService";
-import { Types } from "ably";
 
 type Props = {
   params: {
@@ -195,8 +194,11 @@ const Board = ({ params }: Props) => {
 
   const handlePublishEvent = async () => {
     const space = await getSpace(clientId!, params.id);
-    // TODO: publish the board data
-    await space.channel.publish("canvaEvent", board?.boardData);
+
+    await space.channel.publish("canvasEvent", {
+      canvasData: board?.boardData,
+      clientId: clientId,
+    });
   };
 
   const handleLeaveBoard = async () => {
@@ -213,6 +215,7 @@ const Board = ({ params }: Props) => {
 
   const handleSaveBoard = () => {
     handlePublishEvent();
+
     updateBoardMutation.mutate({
       boardId: params.id,
       boardName: board?.name as string,
@@ -227,13 +230,6 @@ const Board = ({ params }: Props) => {
   const handleSwitchShape = (shape: Shapes) => {
     setActiveShape(shape);
   };
-
-  useEffect(() => {
-    if (status === "authenticated" && boardIdTracker?.hostType === "user") {
-      handleSaveBoard();
-    }
-    // TODO: add dependency of board data
-  }, [boardIdTracker, status, board]);
 
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();
@@ -265,6 +261,13 @@ const Board = ({ params }: Props) => {
     }
   }, [boardIdTracker, status]);
 
+  useEffect(() => {
+    setBoard({
+      ...board,
+      boardId: params.id,
+    });
+  }, [params.id]);
+
   return (
     <VStack h="full" w="full">
       {validatingBoard ? (
@@ -293,6 +296,9 @@ const Board = ({ params }: Props) => {
                 activeTool={activeTool}
                 activeShape={activeShape}
                 switchActiveTool={switchActiveTool}
+                handleSaveBoard={handleSaveBoard}
+                handlePublishEvent={handlePublishEvent}
+                boardIdTracker={boardIdTracker}
               />
 
               {/* Cursor */}

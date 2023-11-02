@@ -10,5 +10,5 @@ export type Board = {
   participants?: string[];
   remainingCount?: number | null;
   oneParticipantName?: string | null;
-  boardData?: string;
+  boardData?: any;
 };
