@@ -139,7 +139,7 @@ const Board = ({ params }: Props) => {
       });
     }
 
-    // check if there is already a toast on the screen  
+    // check if there is already a toast on the screen
     const existingToast = document.querySelector(".chakra-toast");
 
     if (!existingToast) {
@@ -227,7 +227,7 @@ const Board = ({ params }: Props) => {
     updateBoardMutation.mutate({
       boardId: params.id,
       boardName: board?.boardName as string,
-      boardData: board?.boardData as string,
+      boardData: boardData,
     });
   };
 
