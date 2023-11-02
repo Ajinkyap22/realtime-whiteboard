@@ -83,3 +83,9 @@ export const updateBoard = async (
 
   return response.data;
 };
+
+export const getBoardData = async (boardId: string) => {
+  const response = await axiosInstance.get("/board-details/" + boardId);
+
+  return response.data;
+};

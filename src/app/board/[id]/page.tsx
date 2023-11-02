@@ -28,8 +28,10 @@ import { ActiveTool } from "@/types/ActiveTool";
 import {
   addParticipant,
   checkValidBoardId,
+  getBoardData,
   updateBoard,
 } from "@/services/boardService";
+import { Board } from "@/types/Board";
 
 type Props = {
   params: {
@@ -42,6 +44,7 @@ const Board = ({ params }: Props) => {
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
   const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
   const [activeShape, setActiveShape] = useState<Shapes>(Shapes.RECTANGLE);
+  const [isClientSubscribed, setIsClientSubscribed] = useState<boolean>(false);
 
   const { data: session, status } = useSession();
 
@@ -74,6 +77,10 @@ const Board = ({ params }: Props) => {
     }) => updateBoard(boardId, boardName, boardData)
   );
 
+  const getBoardDaraMutation = useMutation(({ boardId }: { boardId: string }) =>
+    getBoardData(boardId)
+  );
+
   const { isError: boardIdError, isLoading: validatingBoard } = useQuery(
     ["checkValidBoardId", params.id],
     () => checkValidBoardId(params.id),
@@ -81,9 +88,26 @@ const Board = ({ params }: Props) => {
       retry: false,
       onSuccess: (data) => {
         setBoardIdTracker(data);
+        fetchBoardData();
       },
     }
   );
+
+  const fetchBoardData = async () => {
+    const boardData = await getBoardDaraMutation.mutateAsync({
+      boardId: params.id,
+    });
+
+    const newBoard: Board = {
+      ...board,
+      boardName: boardData.boardName,
+      boardData: boardData.boardData,
+    };
+
+    setBoard(newBoard);
+
+    console.log("boardData", boardData);
+  };
 
   const getToastTitleForUserEvent = (event: string) => {
     switch (event) {
@@ -174,6 +198,9 @@ const Board = ({ params }: Props) => {
     if (!boardIdTracker?.isValid) return;
     if (boardIdError) return;
     if (!clientId) return;
+    if (isClientSubscribed) return;
+
+    console.log("handleAblyConnection");
 
     const profileData: ProfileData = {
       name: session?.user?.name ? session?.user?.name : guestUser,
@@ -182,6 +209,8 @@ const Board = ({ params }: Props) => {
     };
 
     const space = await subscribeTheUser(clientId!, params.id, profileData);
+
+    setIsClientSubscribed(true);
 
     space.subscribe((message) => {
       handleUserEvent(message);
@@ -222,7 +251,7 @@ const Board = ({ params }: Props) => {
 
     updateBoardMutation.mutate({
       boardId: params.id,
-      boardName: board?.name as string,
+      boardName: board?.boardName as string,
       boardData: board?.boardData as string,
     });
   };
