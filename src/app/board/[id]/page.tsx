@@ -139,14 +139,14 @@ const Board = ({ params }: Props) => {
       });
     }
 
-    // check if there is already a toast on the screen
+    // check if there is already a toast on the screen  
     const existingToast = document.querySelector(".chakra-toast");
 
     if (!existingToast) {
       toast({
         description:
-          lastUser.clientId.split("&")[1] + " " + eventHappened + " the room",
-        duration: 20000,
+          lastUser.clientId.split("&")[1] + " " + eventHappened + " the board",
+        duration: 3000,
         isClosable: false,
         position: "bottom-left",
         variant: "left-accent",
