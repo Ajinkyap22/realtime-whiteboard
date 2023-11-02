@@ -38,6 +38,7 @@ const Board = ({ params }: Props) => {
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
   const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
   const [activeShape, setActiveShape] = useState<Shapes>(Shapes.RECTANGLE);
+  const [selection, setSelection] = useState<boolean>(false);
 
   const { data: session, status } = useSession();
 
@@ -251,7 +252,10 @@ const Board = ({ params }: Props) => {
                 handleSwitchShape={handleSwitchShape}
               />
 
-              <Whiteboard activeTool={activeTool} activeShape={activeShape} />
+              <Whiteboard
+                activeTool={activeTool} activeShape={activeShape}
+                switchActiveTool={switchActiveTool}
+              />
 
               {/* Cursor */}
               {membersLocation && membersLocation.length > 0 ? (

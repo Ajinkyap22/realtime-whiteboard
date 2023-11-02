@@ -58,6 +58,17 @@ const Toolbox = ({
           handleSwitchTool={() => switchActiveTool(ActiveTool.SHAPE)}
           handleSwitchShape={handleSwitchShape}
         />
+        <Button
+          onClick={() => switchActiveTool(ActiveTool.ERASER)}
+          py="5"
+          px="4"
+          bg="transparent"
+          _hover={{
+            bg: "gray.50",
+          }}
+        >
+          <Image src="/icons/eraser.svg" alt="eraser" w="6" h="6" />
+        </Button>
       </VStack>
     </VStack>
   );

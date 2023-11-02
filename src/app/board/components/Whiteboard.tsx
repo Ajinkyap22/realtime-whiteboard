@@ -10,18 +10,20 @@ import { Shapes } from "@/types/Shapes";
 type Props = {
   activeTool: ActiveTool;
   activeShape: Shapes;
+  switchActiveTool: (tool: ActiveTool) => void;
 };
 
-const Whiteboard = ({ activeTool, activeShape }: Props) => {
+const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
 
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    const newCanvas = new fabric.Canvas(canvasRef.current);
+    const newCanvas = new fabric.Canvas(canvasRef.current, {
+      backgroundColor: "rgba(0, 0, 0, 0)", // Set canvas background color to transparent
+    });
     setCanvas(newCanvas);
-
     const imageURL =
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23d8d8d8' fill-opacity='0.3'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E";
 
@@ -56,6 +58,7 @@ const Whiteboard = ({ activeTool, activeShape }: Props) => {
     if (!canvas) return;
 
     canvas.isDrawingMode = false;
+    canvas.off();
 
     // Set the active tool
     switch (activeTool) {
@@ -68,22 +71,89 @@ const Whiteboard = ({ activeTool, activeShape }: Props) => {
       case ActiveTool.SHAPE:
         handleAddShape();
         break;
+      case ActiveTool.ERASER:
+        handleErase();
+        break;
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool, canvas, activeShape]);
 
   // add event listener to canvas
-  function handleAddText() {}
+  function handleAddText() {
+    if (!canvas) return;
+    canvas.isDrawingMode = false;
+
+    // Create a flag to track whether the first mouse down has occurred
+    let isFirstMouseDown = true;
+
+    // Add an event listener to the canvas for the `mouse:down` event
+    canvas.on("mouse:down", function (e) {
+      if (!canvas) return;
+
+      // If the first mouse down has not occurred yet, call `setTextCoords()`
+      if (isFirstMouseDown) {
+        setTextCoords(e);
+        isFirstMouseDown = false;
+      }
+    });
+  }
 
   // event handler for text
-  function setTextCoords({
-    clientX,
-    clientY,
-  }: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {}
+  function setTextCoords(e: any) {
+    if (!canvas) return;
+    const pointer = canvas.getPointer(e, false);
+    const posX = pointer.x;
+    const posY = pointer.y;
+
+    //render input box but only once
+    renderInputBox(posX, posY);
+  }
+
+  function renderInputBox(posX: number, posY: number) {
+    if (!canvas) return;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.style.position = "absolute";
+    input.style.left = posX + "px";
+    input.style.top = posY + "px";
+    input.style.fontSize = "20px";
+    input.style.fontFamily = "Arial";
+    input.style.color = "black";
+    input.style.border = "1px solid black";
+    input.style.outline = "none";
+    input.style.backgroundColor = "transparent";
+    input.style.zIndex = "999";
+    input.style.width = "200px";
+    input.style.padding = "0px";
+    input.style.paddingLeft = "5px";
+    input.style.margin = "0px";
+    input.style.overflow = "hidden";
+    input.onkeydown = function (e) {
+      if (e.key === "Enter") {
+        const text = new fabric.IText(input.value, {
+          left: posX,
+          top: posY,
+          fontFamily: "arial",
+          fill: "#000",
+          fontSize: 20,
+        });
+
+        canvas?.add(text);
+        canvas?.off("mouse:down", setTextCoords);
+        document.body.removeChild(input);
+        switchActiveTool(ActiveTool.BRUSH);
+      }
+    };
+
+    document.body.appendChild(input);
+    setTimeout(() => {
+      input.focus();
+    }, 100);
+  }
 
   function handledDraw() {
     if (!canvas) return;
-
     canvas.isDrawingMode = true;
     canvas.freeDrawingBrush.color = "black"; // Set brush color
     canvas.freeDrawingBrush.width = 2; // Set brush width
@@ -302,6 +372,16 @@ const Whiteboard = ({ activeTool, activeShape }: Props) => {
 
     canvas.renderAll();
   };
+
+  function handleErase() {
+    if (!canvas) return;
+    canvas.isDrawingMode = true;
+    canvas.freeDrawingBrush.color = "white"; // Set brush color
+    canvas.freeDrawingBrush.width = 10; // Set brush width
+
+    //Below code is not working
+    // canvas.freeDrawingBrush.globalCompositeOperation = "source-over";
+  }
 
   return (
     <>
