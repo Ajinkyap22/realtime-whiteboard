@@ -70,6 +70,7 @@ const BoardName = () => {
         onKeyDown={handleKeyDown}
         contentEditable
         suppressContentEditableWarning
+        isTruncated
       >
         {board?.boardName ?? "Untitled"}
       </Text>

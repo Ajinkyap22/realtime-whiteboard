@@ -2,7 +2,7 @@ import React from "react";
 
 import { SpaceMember } from "@ably/spaces";
 
-import { HStack, AvatarGroup, Avatar } from "@chakra-ui/react";
+import { AvatarGroup, Avatar } from "@chakra-ui/react";
 
 type Props = {
   members: SpaceMember[];
@@ -10,7 +10,7 @@ type Props = {
 
 const AvatarStack = ({ members }: Props) => {
   return (
-    <AvatarGroup max={6}>
+    <AvatarGroup max={3} size="sm">
       {members.map((member) => (
         <Avatar
           key={member.clientId}

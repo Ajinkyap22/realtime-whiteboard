@@ -60,7 +60,15 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
   if (pathname === "/") return null;
 
   return (
-    <HStack justifyContent="space-between" w="full" p="4" px="6">
+    <HStack
+      justifyContent="space-between"
+      w="full"
+      p="4"
+      px={{
+        base: "3",
+        md: "6",
+      }}
+    >
       <HStack
         bg="white"
         shadow="all-around"
@@ -91,25 +99,29 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
           as={Button}
           h="0"
           py="5"
-          px="4"
+          px="2"
           bg="transparent"
           _hover={{
             bg: "gray.50",
           }}
+          minW="5"
         >
           <Image src="/icons/download.svg" alt="edit" w="5" h="5" />
-          <Text fontSize="sm" color="darkPrimary" fontWeight="normal">
-            Download
-          </Text>
         </HStack>
       </HStack>
 
       <HStack
         bg="white"
         shadow="all-around"
-        p="4"
+        p={{
+          base: "3",
+          md: "4",
+        }}
         borderRadius="md"
-        gap="4"
+        gap={{
+          base: "3",
+          md: "4",
+        }}
         zIndex={1}
       >
         <AvatarStack members={members ?? []} />
@@ -144,7 +156,7 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
         {status === "authenticated" && (
           <HStack alignItems="center" gap="4">
-            <Button onClick={handleSignOut} px="3" py="5" h="0">
+            <Button onClick={handleSignOut} px="3" py="5" h="0" minW="4">
               <Image src="/icons/logout.svg" alt="Logout" w="4" h="4" />
             </Button>
           </HStack>

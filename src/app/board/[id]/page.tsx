@@ -138,14 +138,19 @@ const Board = ({ params }: Props) => {
       });
     }
 
-    toast({
-      description:
-        lastUser.clientId.split("&")[1] + " " + eventHappened + " the room",
-      duration: 2000,
-      isClosable: false,
-      position: "bottom-left",
-      variant: "left-accent",
-    });
+    // check if there is already a toast on the screen
+    const existingToast = document.querySelector(".chakra-toast");
+
+    if (!existingToast) {
+      toast({
+        description:
+          lastUser.clientId.split("&")[1] + " " + eventHappened + " the room",
+        duration: 20000,
+        isClosable: false,
+        position: "bottom-left",
+        variant: "left-accent",
+      });
+    }
   };
 
   const handleCursorEvent = (cursorEvent: CursorUpdate) => {
