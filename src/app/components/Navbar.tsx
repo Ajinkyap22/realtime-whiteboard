@@ -1,48 +1,157 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-import { HStack, Text, Avatar, Button, Image } from "@chakra-ui/react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { HStack, Text, Button, Image, useDisclosure } from "@chakra-ui/react";
+import { signOut, useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
+import { useBoundStore } from "@/zustand/store";
 
-const Navbar = () => {
-  const { data: session, status } = useSession();
+import ShareModal from "@/app/components/ShareModal";
+import Divider from "@/app/components/Divider";
 
-  const handleSignIn = () => {
-    signIn("google");
-  };
+import { SpaceMember } from "@ably/spaces";
+import AvatarStack from "./AvatarStack";
+import BoardName from "./BoardName";
+
+type Props = {
+  members?: SpaceMember[];
+  handleLeaveBoard?: () => void;
+};
+
+const Navbar = ({ members, handleLeaveBoard }: Props) => {
+  const { status } = useSession();
+  const pathname = usePathname();
+
+  const guestUser = useBoundStore((state) => state.guestUser);
+  const clientId = useBoundStore((state) => state.clientId);
+  const board = useBoundStore((state) => state.board);
+
+  const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const setClientId = useBoundStore((state) => state.setClientId);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  useEffect(() => {
+    if (status === "unauthenticated" && !guestUser && clientId) {
+      handleLeaveBoard && handleLeaveBoard();
+    }
+  }, [status, guestUser, clientId, handleLeaveBoard]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      setGuestUser(null);
+      setClientId(null);
+    }
+  }, [status, setGuestUser, setClientId]);
 
   const handleSignOut = () => {
     signOut();
   };
 
-  if (status === "unauthenticated") return null;
+  const handleDownload = () => {
+    const canvas = document.querySelector("canvas");
+    const link = document.createElement("a");
+    link.download = `${board?.boardName ?? "whiteboard"}.png`;
+    link.href = canvas?.toDataURL("image/png") ?? "";
+    link.click();
+  };
+
+  if (pathname === "/") return null;
 
   return (
-    <HStack justifyContent="flex-end" w="full" p="4">
-      {status === "authenticated" ? (
-        <HStack alignItems="center" gap="4">
-          <HStack>
-            <Avatar
-              src={session.user?.image ?? ""}
-              name={session.user?.name ?? "User"}
-              size="sm"
-            />
-
-            <Text fontSize="sm">{session.user?.name}</Text>
-          </HStack>
-
-          <Button onClick={handleSignOut} p="0">
-            <Image src="/icons/logout.svg" alt="Logout" w="4" h="4" />
-          </Button>
-        </HStack>
-      ) : (
-        <Button onClick={handleSignIn}>
-          <Text fontWeight="normal" fontSize="sm">
-            Sign in
+    <HStack justifyContent="space-between" w="full" p="4" px="6">
+      <HStack
+        bg="white"
+        shadow="all-around"
+        px="4"
+        py="1.5"
+        borderRadius="md"
+        gap="4"
+        zIndex={1}
+      >
+        {/* logo */}
+        <HStack gap="4">
+          <Image src="/icons/logo.svg" alt="Syncboard" w="6" h="6" />
+          <Text fontSize="md" color="darkPrimary">
+            Syncboard
           </Text>
-        </Button>
-      )}
+        </HStack>
+
+        <Divider />
+
+        {/* board name & edit */}
+        <BoardName />
+
+        <Divider />
+
+        {/* download button */}
+        <HStack
+          onClick={handleDownload}
+          as={Button}
+          h="0"
+          py="5"
+          px="4"
+          bg="transparent"
+          _hover={{
+            bg: "gray.50",
+          }}
+        >
+          <Image src="/icons/download.svg" alt="edit" w="5" h="5" />
+          <Text fontSize="sm" color="darkPrimary" fontWeight="normal">
+            Download
+          </Text>
+        </HStack>
+      </HStack>
+
+      <HStack
+        bg="white"
+        shadow="all-around"
+        p="4"
+        borderRadius="md"
+        gap="4"
+        zIndex={1}
+      >
+        <AvatarStack members={members ?? []} />
+
+        {handleLeaveBoard && (
+          <>
+            <Button
+              bg="#687EFF"
+              color="white"
+              onClick={onOpen}
+              _hover={{
+                bg: "#596cdc",
+                color: "white",
+              }}
+            >
+              <Text fontSize="sm">Share board</Text>
+            </Button>
+
+            <Button
+              bg="#df5d5d"
+              color="white"
+              onClick={handleLeaveBoard}
+              _hover={{
+                bg: "#cc5151",
+                color: "white",
+              }}
+            >
+              <Text fontSize="sm">Leave</Text>
+            </Button>
+          </>
+        )}
+
+        {status === "authenticated" && (
+          <HStack alignItems="center" gap="4">
+            <Button onClick={handleSignOut} px="3" py="5" h="0">
+              <Image src="/icons/logout.svg" alt="Logout" w="4" h="4" />
+            </Button>
+          </HStack>
+        )}
+      </HStack>
+
+      {isOpen && <ShareModal isOpen={isOpen} onClose={onClose} />}
     </HStack>
   );
 };

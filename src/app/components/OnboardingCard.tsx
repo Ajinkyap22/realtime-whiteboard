@@ -1,18 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { VStack, Text, Button } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
+import { useBoundStore } from "@/zustand/store";
 
 type Props = {
   type: "create-board" | "sign in";
+  handleCreateBoard: () => void;
 };
 
-const OnboardingCard = ({ type }: Props) => {
+const OnboardingCard = ({ type, handleCreateBoard }: Props) => {
+  const router = useRouter();
+  const { status } = useSession();
+
+  const guestUser = useBoundStore((state) => state.guestUser);
+  const board = useBoundStore((state) => state.board);
+  const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const setClientId = useBoundStore((state) => state.setClientId);
+
   const handleSignIn = () => {
     signIn("google");
   };
+
+  useEffect(() => {
+    if (status === "unauthenticated" && !!guestUser && !!board) {
+      router.push(`/board/${board.id}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, guestUser, board]);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      setGuestUser(null);
+      setClientId(null);
+    }
+  }, [status, setGuestUser, setClientId]);
 
   return (
     <VStack bg="white" p="6" borderRadius="lg" boxShadow="all-around">
@@ -44,6 +69,7 @@ const OnboardingCard = ({ type }: Props) => {
 
       {type === "create-board" ? (
         <Button
+          onClick={handleCreateBoard}
           mt="6"
           fontSize="lg"
           h="0"

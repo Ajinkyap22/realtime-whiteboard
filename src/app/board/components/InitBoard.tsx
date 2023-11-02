@@ -1,45 +1,63 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 
 import {
-  Text,
   Button,
   FormControl,
   FormLabel,
   Input,
-  HStack,
   VStack,
+  Text,
 } from "@chakra-ui/react";
 
+import { useSession, signIn } from "next-auth/react";
+
+import { useBoundStore } from "@/zustand/store";
+
 type Props = {
-  formLabel: string;
-  inputType: string;
-  placeholder: string;
-  buttonText: string;
-  alternativeButtonText: string;
-  handleToggle: () => void;
-  handleClick: () => void;
+  handleSave: (guestUserName: string) => void;
 };
 
-const InitBoard = ({
-  formLabel,
-  inputType,
-  placeholder,
-  buttonText,
-  alternativeButtonText,
-  handleToggle,
-  handleClick,
-}: Props) => {
+const InitBoard = ({ handleSave }: Props) => {
+  const [guestUserName, setGuestUserName] = useState("");
+  const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const setClientId = useBoundStore((state) => state.setClientId);
+
+  const { status } = useSession();
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setGuestUserName(e.target.value);
+  };
+
+  const handleSignIn = () => {
+    signIn("google");
+  };
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      setGuestUser(null);
+      setClientId(null);
+    }
+  }, [status, setGuestUser, setClientId]);
+
   return (
-    <>
-      <VStack gap="6">
-        <FormControl isRequired>
-          <FormLabel color="darkPrimary">{formLabel}</FormLabel>
+    <VStack gap="6">
+      <FormControl isRequired>
+        <FormLabel color="darkPrimary">What should we call you?</FormLabel>
 
-          <Input type={inputType} placeholder={placeholder} />
-        </FormControl>
+        <Input
+          value={guestUserName}
+          type="text"
+          placeholder='e.g. "John Doe"'
+          onChange={handleInputChange}
+        />
+      </FormControl>
 
+      <VStack gap="2" w="full">
         <Button
-          onClick={handleClick}
+          isDisabled={!guestUserName}
+          onClick={() => handleSave(guestUserName)}
           w="full"
           h="0"
           py="5"
@@ -53,27 +71,24 @@ const InitBoard = ({
             color: "white",
           }}
         >
-          {buttonText}
+          Let&#39;s go!
         </Button>
-      </VStack>
 
-      <Text
-        my="3"
-        textAlign="center"
-        color="darkPrimary"
-        fontWeight="light"
-        fontSize="lg"
-      >
-        or
-      </Text>
+        <Text
+          textAlign="center"
+          color="darkPrimary"
+          fontWeight="light"
+          fontSize="lg"
+        >
+          or
+        </Text>
 
-      <HStack w="full" justifyContent="center">
         <Button
+          onClick={handleSignIn}
           w="full"
-          onClick={handleToggle}
           h="0"
           py="5"
-          bg="white"
+          bg="transparent"
           border="1px"
           borderColor="darkPrimary"
           color="darkPrimary"
@@ -83,10 +98,10 @@ const InitBoard = ({
             color: "white",
           }}
         >
-          {alternativeButtonText}
+          Sign in
         </Button>
-      </HStack>
-    </>
+      </VStack>
+    </VStack>
   );
 };
 

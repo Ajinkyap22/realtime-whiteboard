@@ -9,20 +9,18 @@ import {
   ModalContent,
   ModalHeader,
   ModalBody,
+  Button,
 } from "@chakra-ui/react";
-import { useBoundStore } from "@/zustand/store";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-import InitBoard from "@/app/board/components/InitBoard";
-
-const InitModal = () => {
+const InvalidBoardModal = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const setGuestUser = useBoundStore((state) => state.setGuestUser);
+  const { status } = useSession();
 
-  const handleCreateGuestUser = (guestUserName: string) => {
-    setGuestUser(guestUserName);
-    onClose();
-  };
+  const router = useRouter();
 
   useEffect(() => {
     onOpen();
@@ -44,16 +42,19 @@ const InitModal = () => {
       />
 
       <ModalContent>
-        <ModalHeader color="darkPrimary">
-          Tell us a little about yourself
-        </ModalHeader>
-
+        <ModalHeader color="darkPrimary">This board does not exist</ModalHeader>
         <ModalBody pb="6">
-          <InitBoard handleSave={handleCreateGuestUser} />
+          <Button
+            onClick={() =>
+              router.push(status === "authenticated" ? "/boards" : "/")
+            }
+          >
+            Go back
+          </Button>
         </ModalBody>
       </ModalContent>
     </Modal>
   );
 };
 
-export default InitModal;
+export default InvalidBoardModal;
