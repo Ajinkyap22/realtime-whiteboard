@@ -31,13 +31,28 @@ const Boards = () => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data: boards, isLoading } = useQuery("boards", () =>
-    getMyBoards(session?.user?.email as string)
+  const { data: boards, isLoading } = useQuery(
+    "boards",
+    () => getMyBoards(session?.user?.email as string),
+    {
+      onSuccess: (data) => {
+        data?.forEach((board: Board) => {
+          router.prefetch(`/boards/${board.boardId}`);
+        });
+      },
+    }
   );
 
   const { data: joinedBoards, isLoading: loadingJoinedBoards } = useQuery(
     "joinedBoards",
-    () => getJoinedBoards(session?.user?.email as string)
+    () => getJoinedBoards(session?.user?.email as string),
+    {
+      onSuccess: (data) => {
+        data?.forEach((board: Board) => {
+          router.prefetch(`/boards/${board.boardId}`);
+        });
+      },
+    }
   );
 
   useEffect(() => {

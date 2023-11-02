@@ -19,6 +19,7 @@ import { deleteBoard } from "@/services/boardService";
 import { useSession } from "next-auth/react";
 
 import DeleteModal from "@/app/boards/components/DeleteModal";
+import { useBoundStore } from "@/zustand/store";
 
 type Props = {
   type: "userBoard" | "joinedBoard";
@@ -44,12 +45,19 @@ const BoardCard = ({
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  const setBoard = useBoundStore((state) => state.setBoard);
+
   const { isLoading: isDeleting, mutate: deleteBoardMutation } = useMutation(
     ({ boardId, user }: { boardId: string; user: string }) =>
       deleteBoard(boardId, user)
   );
 
   const handleView = () => {
+    setBoard({
+      boardId,
+      boardName,
+    });
+
     router.push(`/board/${boardId}`);
   };
 

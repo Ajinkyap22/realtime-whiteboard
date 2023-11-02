@@ -27,6 +27,9 @@ import {
 } from "@/services/boardService";
 import Loading from "@/app/loading";
 import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
+import Toolbox from "@/app/board/components/Toolbox";
+import { ActiveTool } from "@/types/ActiveTool";
+import { Shapes } from "@/types/Shapes";
 import { Types } from "ably";
 
 type Props = {
@@ -38,6 +41,9 @@ type Props = {
 const Board = ({ params }: Props) => {
   const [members, setMembers] = useState<SpaceMember[]>([]);
   const [membersLocation, setMembersLocation] = useState<MembersLocation[]>([]);
+  const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
+  const [activeShape, setActiveShape] = useState<Shapes>(Shapes.RECTANGLE);
+  const [selection, setSelection] = useState<boolean>(false);
 
   const { data: session, status } = useSession();
 
@@ -134,14 +140,14 @@ const Board = ({ params }: Props) => {
       });
     }
 
-    toast({
-      description:
-        lastUser.clientId.split("&")[1] + " " + eventHappened + " the room",
-      duration: 2000,
-      isClosable: false,
-      position: "bottom-left",
-      variant: "left-accent",
-    });
+    // toast({
+    //   description:
+    //     lastUser.clientId.split("&")[1] + " " + eventHappened + " the room",
+    //   duration: 2000,
+    //   isClosable: false,
+    //   position: "bottom-left",
+    //   variant: "left-accent",
+    // });
   };
 
   const handleCursorEvent = (cursorEvent: CursorUpdate) => {
@@ -223,6 +229,14 @@ const Board = ({ params }: Props) => {
     });
   };
 
+  const switchActiveTool = (tool: ActiveTool) => {
+    setActiveTool(tool);
+  };
+
+  const handleSwitchShape = (shape: Shapes) => {
+    setActiveShape(shape);
+  };
+
   useEffect(() => {
     if (status === "authenticated" && boardIdTracker?.hostType === "user") {
       handleSaveBoard();
@@ -261,18 +275,34 @@ const Board = ({ params }: Props) => {
   }, [boardIdTracker, status]);
 
   return (
-    <>
+    <VStack h="full" w="full">
       {validatingBoard ? (
         <Loading />
       ) : (
-        <VStack minH="full" w="full" position="relative">
+        <VStack
+          minH="full"
+          w="full"
+          position="relative"
+          alignItems="flex-start"
+        >
           {boardIdError || boardIdTracker?.isValid === false ? (
             <InvalidBoardModal />
           ) : (
             <>
               <Navbar members={members} handleLeaveBoard={handleLeaveBoard} />
 
-              <Whiteboard />
+              <Toolbox
+                activeTool={activeTool}
+                activeShape={activeShape}
+                switchActiveTool={switchActiveTool}
+                handleSwitchShape={handleSwitchShape}
+              />
+
+              <Whiteboard
+                activeTool={activeTool}
+                activeShape={activeShape}
+                switchActiveTool={switchActiveTool}
+              />
 
               {/* Cursor */}
               {membersLocation && membersLocation.length > 0 ? (
@@ -306,7 +336,7 @@ const Board = ({ params }: Props) => {
           {status === "unauthenticated" && !guestUser && <InitModal />}
         </VStack>
       )}
-    </>
+    </VStack>
   );
 };
 
