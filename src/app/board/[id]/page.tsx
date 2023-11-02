@@ -138,14 +138,14 @@ const Board = ({ params }: Props) => {
       });
     }
 
-    // toast({
-    //   description:
-    //     lastUser.clientId.split("&")[1] + " " + eventHappened + " the room",
-    //   duration: 2000,
-    //   isClosable: false,
-    //   position: "bottom-left",
-    //   variant: "left-accent",
-    // });
+    toast({
+      description:
+        lastUser.clientId.split("&")[1] + " " + eventHappened + " the room",
+      duration: 2000,
+      isClosable: false,
+      position: "bottom-left",
+      variant: "left-accent",
+    });
   };
 
   const handleCursorEvent = (cursorEvent: CursorUpdate) => {
@@ -179,7 +179,6 @@ const Board = ({ params }: Props) => {
     const space = await subscribeTheUser(clientId!, params.id, profileData);
 
     space.subscribe((message) => {
-      console.log("userEvent", message);
       handleUserEvent(message);
     });
 
@@ -192,11 +191,11 @@ const Board = ({ params }: Props) => {
     });
   };
 
-  const handlePublishEvent = async () => {
+  const handlePublishEvent = async (boardData: any) => {
     const space = await getSpace(clientId!, params.id);
 
     await space.channel.publish("canvasEvent", {
-      canvasData: board?.boardData,
+      canvasData: boardData,
       clientId: clientId,
     });
   };
@@ -213,8 +212,8 @@ const Board = ({ params }: Props) => {
     }
   };
 
-  const handleSaveBoard = () => {
-    handlePublishEvent();
+  const handleSaveBoard = (boardData: any) => {
+    handlePublishEvent(boardData);
 
     updateBoardMutation.mutate({
       boardId: params.id,

@@ -25,6 +25,7 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
   const guestUser = useBoundStore((state) => state.guestUser);
   const clientId = useBoundStore((state) => state.clientId);
+  const board = useBoundStore((state) => state.board);
 
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setClientId = useBoundStore((state) => state.setClientId);
@@ -46,6 +47,14 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
   const handleSignOut = () => {
     signOut();
+  };
+
+  const handleDownload = () => {
+    const canvas = document.querySelector("canvas");
+    const link = document.createElement("a");
+    link.download = `${board?.boardName ?? "whiteboard"}.png`;
+    link.href = canvas?.toDataURL("image/png") ?? "";
+    link.click();
   };
 
   if (pathname === "/") return null;
@@ -78,6 +87,7 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
         {/* download button */}
         <HStack
+          onClick={handleDownload}
           as={Button}
           h="0"
           py="5"

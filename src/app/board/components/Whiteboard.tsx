@@ -17,8 +17,8 @@ type Props = {
   activeShape: Shapes;
   boardIdTracker: any;
   switchActiveTool: (tool: ActiveTool) => void;
-  handleSaveBoard: () => void;
-  handlePublishEvent: () => void;
+  handleSaveBoard: (boardData: any) => void;
+  handlePublishEvent: (boardData: any) => void;
 };
 
 const Whiteboard = ({
@@ -96,45 +96,57 @@ const Whiteboard = ({
       case ActiveTool.SHAPE:
         handleAddShape();
         break;
+      case ActiveTool.SELECT:
+        cleanUp();
+        break;
       // case ActiveTool.ERASER:
       //   handleErase();
       //   break;
     }
 
-    canvas.on("after:render", (e) => {
-      if (isCanvasUpdatedByEvent.current) {
-        isCanvasUpdatedByEvent.current = false;
-        return;
-      }
-
-      try {
-        const boardData = JSON.stringify(canvas.toJSON());
-
-        const newBoard: Board = {
-          ...board,
-          boardData: boardData,
-        };
-
-        setBoard(newBoard);
-
-        if (status === "authenticated" && boardIdTracker?.hostType === "user") {
-          handleSaveBoard();
-        } else if (status === "unauthenticated" && !!guestUser) {
-          handlePublishEvent();
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool, canvas, activeShape]);
+
+  useEffect(() => {
+    if (!canvas) return;
+
+    canvas.on("object:added", loadCanvasFromJson);
+    canvas.on("mouse:up", loadCanvasFromJson);
+  }, [canvas]);
 
   useEffect(() => {
     if (!isCanvasSet) return;
 
     listenCanvasEvent();
   }, [isCanvasSet]);
+
+  const loadCanvasFromJson = () => {
+    if (!canvas) return;
+
+    if (isCanvasUpdatedByEvent.current) {
+      isCanvasUpdatedByEvent.current = false;
+      return;
+    }
+
+    try {
+      const boardData = JSON.stringify(canvas.toJSON());
+
+      const newBoard: Board = {
+        ...board,
+        boardData: boardData,
+      };
+
+      setBoard(newBoard);
+
+      if (status === "authenticated" && boardIdTracker?.hostType === "user") {
+        handleSaveBoard(boardData);
+      } else if (status === "unauthenticated" && !!guestUser) {
+        handlePublishEvent(boardData);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const listenCanvasEvent = async () => {
     if (!clientId) return;
@@ -156,8 +168,13 @@ const Whiteboard = ({
 
       isCanvasUpdatedByEvent.current = true;
 
+      canvas.off("object:added");
+      canvas.off("mouse:up");
+
       canvas.loadFromJSON(canvasData, () => {
-        canvas.renderAll.bind(canvas);
+        canvas.renderAll();
+        canvas.on("object:added", loadCanvasFromJson);
+        canvas.on("mouse:up", loadCanvasFromJson);
       });
     } catch (e) {
       console.log(e);
@@ -373,7 +390,7 @@ const Whiteboard = ({
 
     canvas.off("mouse:down");
     canvas.off("mouse:move");
-    canvas.off("mouse:up");
+    // canvas.off("mouse:up");
   };
 
   const renderShape = (shape: Shapes, x: number, y: number) => {

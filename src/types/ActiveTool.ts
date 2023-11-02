@@ -3,4 +3,5 @@ export enum ActiveTool {
   TEXT = "Text",
   // ERASER = "Eraser",
   SHAPE = "Shape",
+  SELECT = "Select",
 }

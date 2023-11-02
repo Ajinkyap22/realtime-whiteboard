@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 
 import { ActiveTool } from "@/types/ActiveTool";
 
 import { VStack, Image, Button, Box } from "@chakra-ui/react";
-import Shape from "./Shapes";
+import Shape from "@/app/board/components/Shapes";
 import { Shapes } from "@/types/Shapes";
 
 type Props = {
@@ -70,6 +70,18 @@ const Toolbox = ({
         >
           <Image src="/icons/eraser.svg" alt="eraser" w="6" h="6" />
         </Button> */}
+
+        <Button
+          onClick={() => switchActiveTool(ActiveTool.SELECT)}
+          py="6"
+          px="4"
+          bg={activeTool === ActiveTool.SELECT ? "gray.100" : "transparent"}
+          _hover={{
+            bg: "gray.100",
+          }}
+        >
+          <Image src="/icons/cursor.svg" alt="text" w="6" h="6" p="0.5" />
+        </Button>
       </VStack>
     </VStack>
   );
