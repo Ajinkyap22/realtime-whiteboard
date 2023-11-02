@@ -154,7 +154,7 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
           </>
         )}
 
-        {status === "authenticated" && (
+        {status === "authenticated" && pathname === "/boards" && (
           <HStack alignItems="center" gap="4">
             <Button onClick={handleSignOut} px="3" py="5" h="0" minW="4">
               <Image src="/icons/logout.svg" alt="Logout" w="4" h="4" />

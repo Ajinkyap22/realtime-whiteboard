@@ -28,10 +28,8 @@ import { ActiveTool } from "@/types/ActiveTool";
 import {
   addParticipant,
   checkValidBoardId,
-  getBoardData,
   updateBoard,
 } from "@/services/boardService";
-import { Board } from "@/types/Board";
 
 type Props = {
   params: {
@@ -77,10 +75,6 @@ const Board = ({ params }: Props) => {
     }) => updateBoard(boardId, boardName, boardData)
   );
 
-  const getBoardDaraMutation = useMutation(({ boardId }: { boardId: string }) =>
-    getBoardData(boardId)
-  );
-
   const { isError: boardIdError, isLoading: validatingBoard } = useQuery(
     ["checkValidBoardId", params.id],
     () => checkValidBoardId(params.id),
@@ -88,26 +82,9 @@ const Board = ({ params }: Props) => {
       retry: false,
       onSuccess: (data) => {
         setBoardIdTracker(data);
-        fetchBoardData();
       },
     }
   );
-
-  const fetchBoardData = async () => {
-    const boardData = await getBoardDaraMutation.mutateAsync({
-      boardId: params.id,
-    });
-
-    const newBoard: Board = {
-      ...board,
-      boardName: boardData.boardName,
-      boardData: boardData.boardData,
-    };
-
-    setBoard(newBoard);
-
-    console.log("boardData", boardData);
-  };
 
   const getToastTitleForUserEvent = (event: string) => {
     switch (event) {
@@ -199,8 +176,6 @@ const Board = ({ params }: Props) => {
     if (boardIdError) return;
     if (!clientId) return;
     if (isClientSubscribed) return;
-
-    console.log("handleAblyConnection");
 
     const profileData: ProfileData = {
       name: session?.user?.name ? session?.user?.name : guestUser,
@@ -348,7 +323,7 @@ const Board = ({ params }: Props) => {
                         position="absolute"
                         left={memberLocation.x + "px"}
                         top={memberLocation.y + "px"}
-                        zIndex={1000}
+                        zIndex={10}
                         alignItems="center"
                       >
                         <Cursor />

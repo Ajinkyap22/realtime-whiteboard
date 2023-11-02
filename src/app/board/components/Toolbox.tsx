@@ -26,7 +26,7 @@ const Toolbox = ({
         shadow="all-around"
         mx="4"
         borderRadius="md"
-        zIndex={1}
+        zIndex={20}
       >
         <Button
           onClick={() => switchActiveTool(ActiveTool.BRUSH)}

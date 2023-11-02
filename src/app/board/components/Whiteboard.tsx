@@ -11,6 +11,8 @@ import { useBoundStore } from "@/zustand/store";
 import { Board } from "@/types/Board";
 import { getSpace } from "@/app/config/ably";
 import { useSession } from "next-auth/react";
+import { getBoardData } from "@/services/boardService";
+import { useMutation } from "react-query";
 
 type Props = {
   activeTool: ActiveTool;
@@ -41,6 +43,41 @@ const Whiteboard = ({
   const { status } = useSession();
 
   const canvasRef = useRef(null);
+
+  const getBoardDataMutation = useMutation(({ boardId }: { boardId: string }) =>
+    getBoardData(boardId)
+  );
+
+  const fetchBoardData = async () => {
+    const boardData = await getBoardDataMutation.mutateAsync({
+      boardId: board?.boardId as string,
+    });
+
+    const newBoard: Board = {
+      ...board,
+      boardName: boardData.boardName,
+      boardData: boardData.boardData,
+      host: boardData.host,
+    };
+
+    setBoard(newBoard);
+
+    if (!canvas) return;
+
+    if (boardData?.boardData) {
+      canvas.loadFromJSON(boardData?.boardData, () => {
+        canvas.renderAll();
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!boardIdTracker) return;
+
+    if (boardIdTracker?.isValid && boardIdTracker?.hostType === "user") {
+      fetchBoardData();
+    }
+  }, [boardIdTracker, canvas]);
 
   useEffect(() => {
     const newCanvas = new fabric.Canvas(canvasRef.current, {

@@ -1,10 +1,27 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { HStack, Text, Image } from "@chakra-ui/react";
 import { useBoundStore } from "@/zustand/store";
+import { useMutation } from "react-query";
+import { updateBoard } from "@/services/boardService";
+import { useSession } from "next-auth/react";
 
 const BoardName = () => {
   const [editedBoardName, setEditedBoardName] = useState<string>("");
+  const [isHost, setIsHost] = useState<boolean>(false);
+  const { data: session } = useSession();
+
+  const updateBoardMutation = useMutation(
+    ({
+      boardId,
+      boardName,
+      boardData,
+    }: {
+      boardId: string;
+      boardName: string;
+      boardData: string;
+    }) => updateBoard(boardId, boardName, boardData)
+  );
 
   const board = useBoundStore((state) => state.board);
   const setBoard = useBoundStore((state) => state.setBoard);
@@ -17,12 +34,26 @@ const BoardName = () => {
     if (editedBoardName && editedBoardName !== board?.boardName) {
       setBoard({
         ...board,
-        name: editedBoardName,
+        boardName: editedBoardName,
+      });
+
+      updateBoardMutation.mutate({
+        boardId: board?.boardId as string,
+        boardName: editedBoardName as string,
+        boardData: board?.boardData as string,
       });
     }
 
     setEditedBoardName("");
   };
+
+  useEffect(() => {
+    if (!board?.boardName)
+      setBoard({
+        ...board,
+        boardName: "Untitled",
+      });
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter") {
@@ -44,9 +75,16 @@ const BoardName = () => {
     }
   };
 
+  useEffect(() => {
+    if (board && board.host) {
+      setIsHost(board.host === session?.user?.email);
+    }
+  }, [board?.host]);
+
   return (
     <HStack>
-      <Image src="/icons/edit.svg" alt="edit" w="4" h="4" />
+      {isHost && <Image src="/icons/edit.svg" alt="edit" w="4" h="4" />}
+
       <Text
         fontSize="sm"
         color="darkPrimary"
@@ -57,8 +95,8 @@ const BoardName = () => {
         whiteSpace="nowrap"
         overflow="auto"
         _hover={{
-          border: "1px solid #E2E8F0",
-          bg: "gray.50",
+          border: isHost ? "1px solid #E2E8F0" : "1px solid transparent",
+          bg: isHost ? "gray.50" : "transparent",
         }}
         css={{
           "&::-webkit-scrollbar": {
@@ -68,7 +106,7 @@ const BoardName = () => {
         onInput={handleNameChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        contentEditable
+        contentEditable={isHost}
         suppressContentEditableWarning
         isTruncated
       >
