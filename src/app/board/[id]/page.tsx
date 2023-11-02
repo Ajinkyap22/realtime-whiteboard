@@ -338,7 +338,9 @@ const Board = ({ params }: Props) => {
             </>
           )}
 
-          {status === "unauthenticated" && !guestUser && <InitModal />}
+          {status === "unauthenticated" &&
+            !guestUser &&
+            boardIdTracker?.isValid && <InitModal />}
         </VStack>
       )}
     </VStack>
