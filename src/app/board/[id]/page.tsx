@@ -166,11 +166,6 @@ const Board = ({ params }: Props) => {
     });
   };
 
-  const handleCanvaEvent = (message: Types.Message) => {
-    // TODO: get the data as string and parse it and provide that to canva
-    console.log("canvaData", message.data);
-  };
-
   const handleAblyConnection = async () => {
     if (validatingBoard) return;
     if (!boardIdTracker?.isValid) return;
@@ -190,10 +185,6 @@ const Board = ({ params }: Props) => {
       handleUserEvent(message);
     });
 
-    space.channel.subscribe("canvaEvent", (message) => {
-      handleCanvaEvent(message);
-    });
-
     space.cursors.subscribe("update", (cursorEvent) => {
       handleCursorEvent(cursorEvent);
     });
@@ -206,7 +197,7 @@ const Board = ({ params }: Props) => {
   const handlePublishEvent = async () => {
     const space = await getSpace(clientId!, params.id);
     // TODO: publish the board data
-    await space.channel.publish("canvaEvent", "hello world");
+    await space.channel.publish("canvaEvent", board?.boardData);
   };
 
   const handleLeaveBoard = async () => {
@@ -222,6 +213,7 @@ const Board = ({ params }: Props) => {
   };
 
   const handleSaveBoard = () => {
+    handlePublishEvent();
     updateBoardMutation.mutate({
       boardId: params.id,
       boardName: board?.name as string,
@@ -242,7 +234,7 @@ const Board = ({ params }: Props) => {
       handleSaveBoard();
     }
     // TODO: add dependency of board data
-  }, [boardIdTracker, status]);
+  }, [boardIdTracker, status, board]);
 
   useEffect(() => {
     if (status === "authenticated" || !!guestUser) handleAblyConnection();

@@ -6,6 +6,9 @@ import { fabric } from "fabric";
 import ZoomPanel from "@/app/board/components/ZoomPanel";
 import { ActiveTool } from "@/types/ActiveTool";
 import { Shapes } from "@/types/Shapes";
+import { useBoundStore } from "@/zustand/store";
+import { Board } from "@/types/Board";
+import { getSpace } from "@/app/config/ably";
 
 type Props = {
   activeTool: ActiveTool;
@@ -16,6 +19,10 @@ type Props = {
 const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+
+  const setBoard = useBoundStore((state) => state.setBoard);
+  const board = useBoundStore((state) => state.board);
+  const clientId = useBoundStore((state) => state.clientId);
 
   const canvasRef = useRef(null);
 
@@ -58,7 +65,7 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
     if (!canvas) return;
 
     canvas.isDrawingMode = false;
-    canvas.off();
+    // canvas.off();
 
     // Set the active tool
     switch (activeTool) {
@@ -75,9 +82,53 @@ const Whiteboard = ({ activeTool, activeShape, switchActiveTool }: Props) => {
         handleErase();
         break;
     }
+    canvas.on("object:added", (e) => {
+      console.log("object added");
+
+      const boardData = JSON.stringify(e.target?.toJSON());
+
+      const newBoard: Board = {
+        ...board,
+        boardData: boardData,
+      };
+
+      setBoard(newBoard);
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTool, canvas, activeShape]);
+
+  // event Listener
+  useEffect(() => {
+    listenCanvaEvent();
+  }, []);
+
+  const listenCanvaEvent = async () => {
+    if (!clientId) return;
+
+    const space = await getSpace(clientId, board?.boardId as string);
+
+    space.channel.subscribe("canvaEvent", (message) => {
+      console.log("canvaEvent", message.data);
+      handleCanvaEvent(message.data);
+    });
+  };
+
+  const handleCanvaEvent = (data: any) => {
+    try {
+      if (!canvas) return;
+
+      const jsonData = JSON.parse(data);
+
+      const path = new fabric.Path(jsonData);
+
+      canvas.add(jsonData);
+
+      canvas.renderAll();
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   // add event listener to canvas
   function handleAddText() {
