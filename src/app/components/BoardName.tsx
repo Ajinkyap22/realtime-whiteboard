@@ -32,16 +32,21 @@ const BoardName = () => {
 
   const handleUpdateName = () => {
     if (editedBoardName && editedBoardName !== board?.boardName) {
-      setBoard({
-        ...board,
-        boardName: editedBoardName,
-      });
-
-      updateBoardMutation.mutate({
-        boardId: board?.boardId as string,
-        boardName: editedBoardName as string,
-        boardData: board?.boardData as string,
-      });
+      updateBoardMutation.mutate(
+        {
+          boardId: board?.boardId as string,
+          boardName: editedBoardName as string,
+          boardData: board?.boardData as string,
+        },
+        {
+          onSuccess: () => {
+            setBoard({
+              ...board,
+              boardName: editedBoardName,
+            });
+          },
+        }
+      );
     }
 
     setEditedBoardName("");
