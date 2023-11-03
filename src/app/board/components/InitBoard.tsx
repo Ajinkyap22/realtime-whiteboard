@@ -34,6 +34,12 @@ const InitBoard = ({ handleSave }: Props) => {
     signIn("google");
   };
 
+  const handleKeydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && guestUserName.trim()) {
+      handleSave(guestUserName.trim());
+    }
+  };
+
   useEffect(() => {
     if (status === "authenticated") {
       setGuestUser(null);
@@ -51,12 +57,13 @@ const InitBoard = ({ handleSave }: Props) => {
           type="text"
           placeholder='e.g. "John Doe"'
           onChange={handleInputChange}
+          onKeyDown={handleKeydown}
         />
       </FormControl>
 
       <VStack gap="2" w="full">
         <Button
-          isDisabled={!guestUserName}
+          isDisabled={!guestUserName.trim()}
           onClick={() => handleSave(guestUserName)}
           w="full"
           h="0"

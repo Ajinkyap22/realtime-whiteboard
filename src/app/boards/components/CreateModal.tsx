@@ -66,11 +66,17 @@ const CreateModal = ({ isOpen, onClose }: Props) => {
 
     createBoardMutation.mutate({
       id,
-      name: board.name,
+      name: boardName.trim(),
       user: session?.user?.email as string,
     });
 
     router.push(`/board/${id}`);
+  };
+
+  const handleKeydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleCreateBoard();
+    }
   };
 
   return (
@@ -98,11 +104,12 @@ const CreateModal = ({ isOpen, onClose }: Props) => {
               type="text"
               placeholder="e.g. My new board"
               onChange={handleInputChange}
+              onKeyDown={handleKeydown}
             />
           </FormControl>
 
           <Button
-            isDisabled={!boardName}
+            isDisabled={!boardName.trim()}
             onClick={handleCreateBoard}
             w="full"
             h="0"

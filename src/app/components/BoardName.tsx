@@ -24,7 +24,7 @@ const BoardName = () => {
   };
 
   const handleUpdateName = () => {
-    if (editedBoardName && editedBoardName !== board?.boardName) {
+    if (editedBoardName.trim() && editedBoardName.trim() !== board?.boardName) {
       updateBoardNameMutation.mutate(
         {
           boardId: board?.boardId as string,
@@ -65,7 +65,7 @@ const BoardName = () => {
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
-    if (editedBoardName) {
+    if (editedBoardName.trim()) {
       handleUpdateName();
     } else {
       e.currentTarget.innerText = board?.boardName ?? "Untitled";
