@@ -73,15 +73,8 @@ const Board = ({ params }: Props) => {
   );
 
   const updateBoardMutation = useMutation(
-    ({
-      boardId,
-      boardName,
-      boardData,
-    }: {
-      boardId: string;
-      boardName: string;
-      boardData: string;
-    }) => updateBoard(boardId, boardName, boardData)
+    ({ boardId, boardData }: { boardId: string; boardData: string }) =>
+      updateBoard(boardId, boardData)
   );
 
   const { isError: boardIdError, isLoading: validatingBoard } = useQuery(
@@ -235,7 +228,6 @@ const Board = ({ params }: Props) => {
 
     updateBoardMutation.mutate({
       boardId: params.id,
-      boardName: board?.boardName as string,
       boardData: boardData,
     });
   };

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { HStack, Text, Image } from "@chakra-ui/react";
 import { useBoundStore } from "@/zustand/store";
 import { useMutation } from "react-query";
-import { updateBoard } from "@/services/boardService";
+import { updateBoardName } from "@/services/boardService";
 import { useSession } from "next-auth/react";
 
 const BoardName = () => {
@@ -11,16 +11,9 @@ const BoardName = () => {
   const [isHost, setIsHost] = useState<boolean>(false);
   const { data: session } = useSession();
 
-  const updateBoardMutation = useMutation(
-    ({
-      boardId,
-      boardName,
-      boardData,
-    }: {
-      boardId: string;
-      boardName: string;
-      boardData: string;
-    }) => updateBoard(boardId, boardName, boardData)
+  const updateBoardNameMutation = useMutation(
+    ({ boardId, boardName }: { boardId: string; boardName: string }) =>
+      updateBoardName(boardId, boardName)
   );
 
   const board = useBoundStore((state) => state.board);
@@ -32,11 +25,10 @@ const BoardName = () => {
 
   const handleUpdateName = () => {
     if (editedBoardName && editedBoardName !== board?.boardName) {
-      updateBoardMutation.mutate(
+      updateBoardNameMutation.mutate(
         {
           boardId: board?.boardId as string,
-          boardName: editedBoardName as string,
-          boardData: board?.boardData as string,
+          boardName: editedBoardName,
         },
         {
           onSuccess: () => {
@@ -115,7 +107,7 @@ const BoardName = () => {
         suppressContentEditableWarning
         isTruncated
       >
-        {board?.boardName ?? "Untitled"}
+        {!board ? "" : board.boardName || "Untitled"}
       </Text>
     </HStack>
   );
