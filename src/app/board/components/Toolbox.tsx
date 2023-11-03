@@ -2,9 +2,11 @@ import React from "react";
 
 import { ActiveTool } from "@/types/ActiveTool";
 
-import { VStack, Image, Button, Box } from "@chakra-ui/react";
-import Shape from "@/app/board/components/Shapes";
+import { VStack, Image, Button } from "@chakra-ui/react";
 import { Shapes } from "@/types/Shapes";
+
+import Shape from "@/app/board/components/Shapes";
+import CustomTooltip from "@/app/components/CustomTooltip";
 
 type Props = {
   activeTool: ActiveTool;
@@ -28,29 +30,33 @@ const Toolbox = ({
         borderRadius="md"
         zIndex={20}
       >
-        <Button
-          onClick={() => switchActiveTool(ActiveTool.BRUSH)}
-          py="6"
-          px="4"
-          bg={activeTool === ActiveTool.BRUSH ? "gray.100" : "transparent"}
-          _hover={{
-            bg: "gray.100",
-          }}
-        >
-          <Image src="/icons/marker.svg" alt="marker" w="6" h="6" />
-        </Button>
+        <CustomTooltip placement="right" label="Brush">
+          <Button
+            onClick={() => switchActiveTool(ActiveTool.BRUSH)}
+            py="6"
+            px="4"
+            bg={activeTool === ActiveTool.BRUSH ? "gray.100" : "transparent"}
+            _hover={{
+              bg: "gray.100",
+            }}
+          >
+            <Image src="/icons/marker.svg" alt="marker" w="6" h="6" />
+          </Button>
+        </CustomTooltip>
 
-        <Button
-          onClick={() => switchActiveTool(ActiveTool.TEXT)}
-          py="6"
-          px="4"
-          bg={activeTool === ActiveTool.TEXT ? "gray.100" : "transparent"}
-          _hover={{
-            bg: "gray.100",
-          }}
-        >
-          <Image src="/icons/text-icon.svg" alt="text" w="6" h="6" />
-        </Button>
+        <CustomTooltip placement="right" label="Text">
+          <Button
+            onClick={() => switchActiveTool(ActiveTool.TEXT)}
+            py="6"
+            px="4"
+            bg={activeTool === ActiveTool.TEXT ? "gray.100" : "transparent"}
+            _hover={{
+              bg: "gray.100",
+            }}
+          >
+            <Image src="/icons/text-icon.svg" alt="text" w="6" h="6" />
+          </Button>
+        </CustomTooltip>
 
         <Shape
           isActive={activeTool === ActiveTool.SHAPE}
@@ -71,17 +77,19 @@ const Toolbox = ({
           <Image src="/icons/eraser.svg" alt="eraser" w="6" h="6" />
         </Button> */}
 
-        <Button
-          onClick={() => switchActiveTool(ActiveTool.SELECT)}
-          py="6"
-          px="4"
-          bg={activeTool === ActiveTool.SELECT ? "gray.100" : "transparent"}
-          _hover={{
-            bg: "gray.100",
-          }}
-        >
-          <Image src="/icons/cursor.svg" alt="text" w="6" h="6" p="0.5" />
-        </Button>
+        <CustomTooltip placement="right" label="Select">
+          <Button
+            onClick={() => switchActiveTool(ActiveTool.SELECT)}
+            py="6"
+            px="4"
+            bg={activeTool === ActiveTool.SELECT ? "gray.100" : "transparent"}
+            _hover={{
+              bg: "gray.100",
+            }}
+          >
+            <Image src="/icons/cursor.svg" alt="text" w="6" h="6" p="0.5" />
+          </Button>
+        </CustomTooltip>
       </VStack>
     </VStack>
   );

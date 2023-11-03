@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 
 import { Button, HStack, Text, Image } from "@chakra-ui/react";
+
 import Divider from "@/app/components/Divider";
+import CustomTooltip from "@/app/components/CustomTooltip";
 
 type Props = {
   currentZoom: number;
@@ -35,53 +37,64 @@ const ZoomPanel = ({ currentZoom, handleZoom }: Props) => {
       borderRadius="md"
       zIndex={1}
     >
-      <Button
-        onClick={() => handleZoom("out")}
-        bg="transparent"
-        fontSize="lg"
-        fontWeight="normal"
-        w="0"
-        h="0"
-        px="2"
-        py="4"
-      >
-        <Image src="/icons/minus.svg" alt="zoom out" w="4" h="4" />
-      </Button>
+      <CustomTooltip label="Zoom out" placement="top">
+        <Button
+          onClick={() => handleZoom("out")}
+          bg="transparent"
+          fontSize="lg"
+          fontWeight="normal"
+          w="0"
+          h="0"
+          px="2"
+          py="4"
+        >
+          <Image src="/icons/minus.svg" alt="zoom out" w="4" h="4" />
+        </Button>
+      </CustomTooltip>
 
       <Text fontSize="sm">{Math.round(currentZoom * 100)}%</Text>
 
-      <Button
-        onClick={() => handleZoom("in")}
-        bg="transparent"
-        fontSize="lg"
-        fontWeight="normal"
-        w="0"
-        h="0"
-        px="2"
-        py="4"
-      >
-        <Image src="/icons/plus.svg" alt="zoom in" w="4" h="4" />
-      </Button>
+      <CustomTooltip label="Zoom in" placement="top">
+        <Button
+          onClick={() => handleZoom("in")}
+          bg="transparent"
+          fontSize="lg"
+          fontWeight="normal"
+          w="0"
+          h="0"
+          px="2"
+          py="4"
+        >
+          <Image src="/icons/plus.svg" alt="zoom in" w="4" h="4" />
+        </Button>
+      </CustomTooltip>
 
       <Divider />
 
-      <Button
-        onClick={handleFullScreen}
-        bg="transparent"
-        fontSize="lg"
-        fontWeight="normal"
-        w="0"
-        h="0"
-        px="2"
-        py="4"
+      <CustomTooltip
+        label={fullScreen ? "Exit full screen" : "Enter full screen"}
+        placement="top"
       >
-        <Image
-          src={fullScreen ? "/icons/smallscreen.svg" : "/icons/fullscreen.svg"}
-          alt="zoom in"
-          w="4"
-          h="4"
-        />
-      </Button>
+        <Button
+          onClick={handleFullScreen}
+          bg="transparent"
+          fontSize="lg"
+          fontWeight="normal"
+          w="0"
+          h="0"
+          px="2"
+          py="4"
+        >
+          <Image
+            src={
+              fullScreen ? "/icons/smallscreen.svg" : "/icons/fullscreen.svg"
+            }
+            alt="zoom in"
+            w="4"
+            h="4"
+          />
+        </Button>
+      </CustomTooltip>
     </HStack>
   );
 };
