@@ -7,8 +7,6 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { VStack, Text, Image, HStack, Box } from "@chakra-ui/react";
 
-import OnboardingCard from "@/app/components/OnboardingCard";
-
 import uniqid from "uniqid";
 import { useMutation } from "react-query";
 import { useBoundStore } from "@/zustand/store";
@@ -18,6 +16,14 @@ import {
   doesUserHaveBoards,
   saveBoardIdTracker,
 } from "@/services/boardService";
+import dynamic from "next/dynamic";
+
+const OnboardingCard = dynamic(
+  () => import("@/app/components/OnboardingCard"),
+  {
+    ssr: false,
+  }
+);
 
 export default function Home() {
   const router = useRouter();

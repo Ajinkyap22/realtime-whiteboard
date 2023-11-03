@@ -1,4 +1,5 @@
 import React from "react";
+import dynamic from "next/dynamic";
 
 import {
   Button,
@@ -15,11 +16,17 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "react-query";
-import { deleteBoard, updateBoard } from "@/services/boardService";
+import { deleteBoard } from "@/services/boardService";
 import { useSession } from "next-auth/react";
 
-import DeleteModal from "@/app/boards/components/DeleteModal";
 import { useBoundStore } from "@/zustand/store";
+
+const DeleteModal = dynamic(
+  () => import("@/app/boards/components/DeleteModal"),
+  {
+    ssr: false,
+  }
+);
 
 type Props = {
   type: "userBoard" | "joinedBoard";

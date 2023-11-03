@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import dynamic from "next/dynamic";
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -23,7 +24,13 @@ import Loading from "@/app/loading";
 import Navbar from "@/app/boards/components/Navbar";
 import BoardCard from "@/app/boards/components/BoardCard";
 import CreateBoardCard from "@/app/boards/components/CreateBoardCard";
-import CreateModal from "@/app/boards/components/CreateModal";
+
+const CreateModal = dynamic(
+  () => import("@/app/boards/components/CreateModal"),
+  {
+    ssr: false,
+  }
+);
 
 const Boards = () => {
   const { status, data: session } = useSession();
