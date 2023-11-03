@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import AvatarStack from "@/app/components/AvatarStack";
 import BoardName from "@/app/components/BoardName";
 import Divider from "@/app/components/Divider";
+import CustomTooltip from "@/app/components/CustomTooltip";
 
 const ShareModal = dynamic(() => import("@/app/components/ShareModal"), {
   ssr: false,
@@ -97,20 +98,21 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
         <Divider />
 
         {/* download button */}
-        <HStack
-          onClick={handleDownload}
-          as={Button}
-          h="0"
-          py="5"
-          px="2"
-          bg="transparent"
-          _hover={{
-            bg: "gray.50",
-          }}
-          minW="5"
-        >
-          <Image src="/icons/download.svg" alt="edit" w="5" h="5" />
-        </HStack>
+        <CustomTooltip label="Download Canvas" placement="bottom">
+          <Button
+            onClick={handleDownload}
+            h="0"
+            py="5"
+            px="2"
+            bg="transparent"
+            _hover={{
+              bg: "gray.50",
+            }}
+            minW="5"
+          >
+            <Image src="/icons/download.svg" alt="edit" w="5" h="5" />
+          </Button>
+        </CustomTooltip>
       </HStack>
 
       <HStack
@@ -158,11 +160,16 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
         )}
 
         {status === "authenticated" && pathname === "/boards" && (
-          <HStack alignItems="center" gap="4">
-            <Button onClick={handleSignOut} px="3" py="5" h="0" minW="4">
-              <Image src="/icons/logout.svg" alt="Logout" w="4" h="4" />
-            </Button>
-          </HStack>
+          <Button
+            title="Log out"
+            onClick={handleSignOut}
+            px="3"
+            py="5"
+            h="0"
+            minW="4"
+          >
+            <Image src="/icons/logout.svg" alt="Logout" w="4" h="4" />
+          </Button>
         )}
       </HStack>
 
