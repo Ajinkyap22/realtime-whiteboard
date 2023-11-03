@@ -1,18 +1,21 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import { HStack, Text, Button, Image, useDisclosure } from "@chakra-ui/react";
 import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useBoundStore } from "@/zustand/store";
+import { SpaceMember } from "@ably/spaces";
+import dynamic from "next/dynamic";
 
-import ShareModal from "@/app/components/ShareModal";
+import AvatarStack from "@/app/components/AvatarStack";
+import BoardName from "@/app/components/BoardName";
 import Divider from "@/app/components/Divider";
 
-import { SpaceMember } from "@ably/spaces";
-import AvatarStack from "./AvatarStack";
-import BoardName from "./BoardName";
+const ShareModal = dynamic(() => import("@/app/components/ShareModal"), {
+  ssr: false,
+});
 
 type Props = {
   members?: SpaceMember[];

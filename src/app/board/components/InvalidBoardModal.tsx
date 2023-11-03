@@ -12,7 +12,6 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const InvalidBoardModal = () => {

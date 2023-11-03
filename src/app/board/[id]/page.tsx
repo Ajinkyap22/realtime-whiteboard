@@ -9,14 +9,6 @@ import { Box, VStack, useToast } from "@chakra-ui/react";
 import { CursorUpdate, ProfileData, SpaceMember } from "@ably/spaces";
 import { useMutation, useQuery } from "react-query";
 
-import InitModal from "@/app/board/components/InitModal";
-import Cursor from "@/app/board/components/Cursor";
-import Whiteboard from "@/app/board/components/Whiteboard";
-import Navbar from "@/app/components/Navbar";
-import InvalidBoardModal from "@/app/board/components/InvalidBoardModal";
-import Toolbox from "@/app/board/components/Toolbox";
-import Loading from "@/app/loading";
-
 import { getSpace, subscribeTheUser } from "@/app/config/ably";
 
 import type { UserEvent } from "@/app/types/UserEvent";
@@ -30,6 +22,23 @@ import {
   checkValidBoardId,
   updateBoard,
 } from "@/services/boardService";
+
+import Cursor from "@/app/board/components/Cursor";
+import Whiteboard from "@/app/board/components/Whiteboard";
+import Navbar from "@/app/components/Navbar";
+import Toolbox from "@/app/board/components/Toolbox";
+import Loading from "@/app/loading";
+import dynamic from "next/dynamic";
+
+const InvalidBoardModal = dynamic(
+  () => import("@/app/board/components/InvalidBoardModal"),
+  {
+    ssr: false,
+  }
+);
+const InitModal = dynamic(() => import("@/app/board/components/InitModal"), {
+  ssr: false,
+});
 
 type Props = {
   params: {
