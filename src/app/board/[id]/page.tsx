@@ -43,6 +43,10 @@ const Board = ({ params }: Props) => {
   const [activeTool, setActiveTool] = useState<ActiveTool>(ActiveTool.BRUSH);
   const [activeShape, setActiveShape] = useState<Shapes>(Shapes.RECTANGLE);
   const [isClientSubscribed, setIsClientSubscribed] = useState<boolean>(false);
+  const [boardIdTracker, setBoardIdTracker] = useState<{
+    isValid: boolean;
+    hostType: string;
+  } | null>(null);
 
   const { data: session, status } = useSession();
 
@@ -52,10 +56,6 @@ const Board = ({ params }: Props) => {
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
   const setBoard = useBoundStore((state) => state.setBoard);
   const board = useBoundStore((state) => state.board);
-  const [boardIdTracker, setBoardIdTracker] = useState<{
-    isValid: boolean;
-    hostType: string;
-  } | null>(null);
 
   const toast = useToast();
 

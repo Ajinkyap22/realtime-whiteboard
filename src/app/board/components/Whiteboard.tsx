@@ -8,7 +8,6 @@ import ZoomPanel from "@/app/board/components/ZoomPanel";
 import { ActiveTool } from "@/types/ActiveTool";
 import { Shapes } from "@/types/Shapes";
 import { useBoundStore } from "@/zustand/store";
-import { Board } from "@/types/Board";
 import { getSpace } from "@/app/config/ably";
 import { useSession } from "next-auth/react";
 import { getBoardData } from "@/services/boardService";
@@ -34,15 +33,19 @@ const Whiteboard = ({
   const [currentZoom, setCurrentZoom] = useState<number>(1);
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [isCanvasSet, setIsCanvasSet] = useState<boolean>(false);
-  let isCanvasUpdatedByEvent = useRef(false);
 
-  const setBoard = useBoundStore((state) => state.setBoard);
+  const canvasRef = useRef(null);
+  const isCanvasUpdatedByEvent = useRef(false);
+
+  const setBoardWithPrevious = useBoundStore(
+    (state) => state.setBoardWithPrevious
+  );
+
   const board = useBoundStore((state) => state.board);
   const clientId = useBoundStore((state) => state.clientId);
   const guestUser = useBoundStore((state) => state.guestUser);
-  const { status } = useSession();
 
-  const canvasRef = useRef(null);
+  const { status } = useSession();
 
   const getBoardDataMutation = useMutation(({ boardId }: { boardId: string }) =>
     getBoardData(boardId)
@@ -53,14 +56,12 @@ const Whiteboard = ({
       boardId: board?.boardId as string,
     });
 
-    const newBoard: Board = {
-      ...board,
+    setBoardWithPrevious((prev) => ({
+      ...prev,
       boardName: boardData.boardName,
       boardData: boardData.boardData,
       host: boardData.host,
-    };
-
-    setBoard(newBoard);
+    }));
 
     if (!canvas) return;
 
@@ -168,12 +169,10 @@ const Whiteboard = ({
     try {
       const boardData = JSON.stringify(canvas.toJSON());
 
-      const newBoard: Board = {
-        ...board,
-        boardData: boardData,
-      };
-
-      setBoard(newBoard);
+      setBoardWithPrevious((prev) => ({
+        ...prev,
+        boardData,
+      }));
 
       if (status === "authenticated" && boardIdTracker?.hostType === "user") {
         handleSaveBoard(boardData);
@@ -222,21 +221,6 @@ const Whiteboard = ({
     if (!canvas) return;
 
     canvas.isDrawingMode = false;
-
-    // disable selection for eraser if selection mode is on
-    // canvas.getObjects().forEach((obj) => {
-    //   if (obj.type === "path" && obj.stroke === "white" && obj.selectable) {
-    //     obj.selectable = false;
-    //   //   // obj.globalCompositeOperation = "destination-over";
-
-    //   //   // canvas.getObjects().forEach((o) => {
-    //   //   //   if (o.intersectsWithObject(obj)) {
-    //   //   //     o.selectable = false;
-    //   //   //     o.stroke = "transparent";
-    //   //   //   }
-    //   //   // });
-    //   // }
-    // });
 
     canvas.renderAll();
   };

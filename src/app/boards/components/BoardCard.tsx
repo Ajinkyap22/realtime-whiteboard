@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "react-query";
-import { deleteBoard } from "@/services/boardService";
+import { deleteBoard, updateBoard } from "@/services/boardService";
 import { useSession } from "next-auth/react";
 
 import DeleteModal from "@/app/boards/components/DeleteModal";
