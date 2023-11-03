@@ -224,7 +224,7 @@ const Whiteboard = ({
     if (!canvas) return;
 
     canvas.isDrawingMode = false;
-
+    canvas.off("mouse:down");
     canvas.renderAll();
   };
 
@@ -233,6 +233,7 @@ const Whiteboard = ({
   // add event listener to canvas
   function handleAddText() {
     if (!canvas) return;
+
     canvas.isDrawingMode = false;
 
     // Create a flag to track whether the first mouse down has occurred
@@ -253,6 +254,7 @@ const Whiteboard = ({
   // event handler for text
   function setTextCoords(e: any) {
     if (!canvas) return;
+
     const pointer = canvas.getPointer(e, false);
     const posX = pointer.x;
     const posY = pointer.y;
@@ -415,6 +417,8 @@ const Whiteboard = ({
     canvas.off("mouse:down");
     canvas.off("mouse:move");
     // canvas.off("mouse:up");
+
+    switchActiveTool(ActiveTool.SELECT);
   };
 
   const renderShape = (shape: Shapes, x: number, y: number) => {
