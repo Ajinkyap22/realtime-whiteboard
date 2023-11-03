@@ -70,14 +70,9 @@ export const checkValidBoardId = async (boardId: string) => {
   return response.data;
 };
 
-export const updateBoard = async (
-  boardId: string,
-  boardName: string,
-  boardData: string
-) => {
+export const updateBoard = async (boardId: string, boardData: string) => {
   const response = await axiosInstance.post("/update-board", {
     boardId,
-    boardName,
     boardData,
   });
 
@@ -86,6 +81,15 @@ export const updateBoard = async (
 
 export const getBoardData = async (boardId: string) => {
   const response = await axiosInstance.get("/board-details/" + boardId);
+
+  return response.data;
+};
+
+export const updateBoardName = async (boardId: string, boardName: string) => {
+  const response = await axiosInstance.post("/update-board-name", {
+    boardId,
+    boardName,
+  });
 
   return response.data;
 };
