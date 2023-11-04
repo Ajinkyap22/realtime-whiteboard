@@ -27,7 +27,7 @@ const OnboardingCard = ({ type, handleCreateBoard }: Props) => {
 
   useEffect(() => {
     if (status === "unauthenticated" && !!guestUser && !!board) {
-      router.push(`/board/${board.id}`);
+      router.push(`/board/${board.boardId}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, guestUser, board]);

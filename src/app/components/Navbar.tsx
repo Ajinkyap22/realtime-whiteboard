@@ -27,8 +27,8 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
   const { status } = useSession();
   const pathname = usePathname();
 
-  const guestUser = useBoundStore((state) => state.guestUser);
-  const clientId = useBoundStore((state) => state.clientId);
+  // const guestUser = useBoundStore((state) => state.guestUser);
+  // const clientId = useBoundStore((state) => state.clientId);
   const board = useBoundStore((state) => state.board);
 
   const setGuestUser = useBoundStore((state) => state.setGuestUser);
@@ -36,11 +36,11 @@ const Navbar = ({ members, handleLeaveBoard }: Props) => {
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  useEffect(() => {
-    if (status === "unauthenticated" && !guestUser && clientId) {
-      handleLeaveBoard && handleLeaveBoard();
-    }
-  }, [status, guestUser, clientId, handleLeaveBoard]);
+  // useEffect(() => {
+  //   if (status === "unauthenticated" && !guestUser && clientId) {
+  //     handleLeaveBoard && handleLeaveBoard();
+  //   }
+  // }, [status, guestUser, clientId, handleLeaveBoard]);
 
   useEffect(() => {
     if (status === "authenticated") {
