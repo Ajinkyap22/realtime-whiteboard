@@ -155,11 +155,11 @@ const Whiteboard = ({
   }, [canvas]);
 
   useEffect(() => {
-    if (!isCanvasSet) return;
+    if (!isCanvasSet || !clientId) return;
 
     listenCanvasEvent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCanvasSet]);
+  }, [isCanvasSet, clientId]);
 
   const loadCanvasFromJson = () => {
     if (!canvas) return;
