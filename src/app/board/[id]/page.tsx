@@ -148,7 +148,7 @@ const Board = ({ params }: Props) => {
       toast({
         description:
           lastUser.clientId.split("&")[1] + " " + eventHappened + " the board",
-        duration: 3000,
+        duration: 2000,
         isClosable: false,
         position: "bottom-left",
         variant: "left-accent",

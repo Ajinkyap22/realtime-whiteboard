@@ -12,6 +12,8 @@ import { getSpace } from "@/app/config/ably";
 import { useSession } from "next-auth/react";
 import { getBoardData } from "@/services/boardService";
 import { useMutation } from "react-query";
+import { Button, HStack, Image } from "@chakra-ui/react";
+import "fabric-history";
 
 type Props = {
   activeTool: ActiveTool;
@@ -172,6 +174,8 @@ const Whiteboard = ({
     try {
       const boardData = JSON.stringify(canvas.toJSON());
 
+      console.log(canvas.toJSON());
+
       setBoardWithPrevious((prev) => ({
         ...prev,
         boardData,
@@ -259,7 +263,7 @@ const Whiteboard = ({
     const posX = pointer.x;
     const posY = pointer.y;
 
-    //render input box but only once
+    // render input box but only once
     renderInputBox(posX, posY);
   }
 
@@ -550,6 +554,19 @@ const Whiteboard = ({
     canvas.renderAll();
   };
 
+  // --------UNDO/REDO---------
+  const handleUndo = () => {
+    if (!canvas || canvas?.getObjects().length <= 1) return;
+
+    canvas.undo();
+  };
+
+  const handleRedo = () => {
+    if (!canvas || canvas?.getObjects().length <= 1) return;
+
+    canvas.redo();
+  };
+
   // --------ERASER---------
   // function handleErase() {
   //   if (!canvas) return;
@@ -573,6 +590,44 @@ const Whiteboard = ({
           top: 0,
         }}
       ></canvas>
+
+      <HStack
+        position="fixed"
+        bottom="6"
+        left="3"
+        bg="white"
+        shadow="all-around"
+        px="2"
+        py="1.5"
+        borderRadius="md"
+        zIndex={1}
+      >
+        <Button
+          onClick={handleUndo}
+          bg="transparent"
+          fontSize="lg"
+          fontWeight="normal"
+          w="0"
+          h="0"
+          px="2"
+          py="4"
+        >
+          <Image src="/icons/undo.svg" alt="Undo" w="4" h="4" />
+        </Button>
+
+        <Button
+          onClick={handleRedo}
+          bg="transparent"
+          fontSize="lg"
+          fontWeight="normal"
+          w="0"
+          h="0"
+          px="2"
+          py="4"
+        >
+          <Image src="/icons/redo.svg" alt="Undo" w="4" h="4" />
+        </Button>
+      </HStack>
 
       <ZoomPanel handleZoom={handleZoom} currentZoom={currentZoom} />
     </>
