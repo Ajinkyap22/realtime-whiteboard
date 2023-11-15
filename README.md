@@ -1,6 +1,28 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SyncBoard
+
+> SyncBoard is a real-time collaboration whiteboard that empowers users to draw, write, and collaborate together in a shared digital space.
+
+### [Backend Repo](https://github.com/pujaagarwal5263/SyncBoard)
+
+## Table of contents
+
+- [Getting Started](#getting-started)
+- [Screenshots](#screenshots)
+- [Live Demo](#live-demo)
+- [Technologies](#technologies)
+- [Status](#status)
 
 ## Getting Started
+
+Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+```
 
 First, run the development server:
 
@@ -10,27 +32,44 @@ npm run dev
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Screenshots
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+<kbd>
+<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/1.png?raw=true" width="600" alt="Add Bookmark" />
+</kbd>
 
-## Learn More
+<hr/>
 
-To learn more about Next.js, take a look at the following resources:
+<kbd>
+  <img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/2.png?raw=true" width="600" alt="View Bookmarks"  />
+</kbd>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+<hr/>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+<kbd>
+<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/3.png?raw=true" width="600" alt="Non-YT Page" />
+</kbd>
 
-## Deploy on Vercel
+<kbd>
+<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/4.png?raw=true" width="600" alt="Non-YT Page" />
+</kbd>
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Live Demo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+### [Live Demo](https://syncboard.vercel.app)
+
+## Technologies
+
+- Next.js 13
+- TypeScript
+- Zustand
+- Chakra UI
+- React Query
+
+## Status
+
+Project is: _finished_
