@@ -54,6 +54,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 <img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/3.png?raw=true" width="600" alt="Non-YT Page" />
 </kbd>
 
+<hr/>
+
 <kbd>
 <img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/4.png?raw=true" width="600" alt="Non-YT Page" />
 </kbd>
