@@ -39,25 +39,25 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Screenshots
 
 <kbd>
-<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/1.png?raw=true" width="600" alt="Add Bookmark" />
+<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/1.png?raw=true" width="600" alt="Sign in" />
 </kbd>
 
 <hr/>
 
 <kbd>
-  <img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/2.png?raw=true" width="600" alt="View Bookmarks"  />
+  <img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/2.png?raw=true" width="600" alt="Boards"  />
 </kbd>
 
 <hr/>
 
 <kbd>
-<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/3.png?raw=true" width="600" alt="Non-YT Page" />
+<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/3.png?raw=true" width="600" alt="Share board" />
 </kbd>
 
 <hr/>
 
 <kbd>
-<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/4.png?raw=true" width="600" alt="Non-YT Page" />
+<img src="https://github.com/Ajinkyap22/realtime-whiteboard/blob/main/public/4.png?raw=true" width="600" alt="Collaborate on board" />
 </kbd>
 
 ## Live Demo
